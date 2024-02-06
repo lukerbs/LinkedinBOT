@@ -30,3 +30,4 @@ After the bot starts runnning, just kick back and wait for the recruiters to mes
 
 ## Tips
 1. Create a tiny URL that links to your public resume on Google Drive or Google Docs and include the url at the bottom of your custom introduction in `introduction.txt`
+

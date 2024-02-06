@@ -11,6 +11,8 @@ import os
 import traceback
 import sys
 
+print(' - - - LINKEDINBOT - - - \n')
+
 def wait():
     input('Press enter to continue: ')
 
@@ -42,7 +44,9 @@ driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
 USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
 
-INDUSTRY = "google data science"
+print('- - ENTER PEOPLE SEARCH QUERY - -')
+print('Examples: data science recruiter, google recruiter, Amazon software engineer, etc.')
+INDUSTRY = input('YOUR QUERY: ').strip()
 
 # Open the website
 url = 'https://www.linkedin.com'
@@ -68,8 +72,7 @@ time.sleep(6)
 
 # wait for challenge if necessary
 page_text = driver.find_element(By.XPATH, "/html/body").text.lower()
-if 'challenge' in page_text or 'verification' in page_text or 'security' in page_text:
-    input('Submit verification code and press enter:')
+input('Complete security challenge if necessary and press ENTER to continue: ')
 time.sleep(3)
 
 search_field = driver.find_element(By.CSS_SELECTOR, 'input[placeholder="Search"]')
@@ -102,10 +105,6 @@ except:
     
 results_window = driver.current_window_handle
 print("READY!")
-
-
-
-
 
     
 # - - - NEW CONNECTION FUNCTIONS - - - 
@@ -313,15 +312,16 @@ try:
         time.sleep(5)
         
 except Exception as e:
+    print('')
+    print('- - ERROR: SOMETHING WENT WRONG - - ')
     print(e)
     print(traceback.format_exc())
     print('')
     
 
 
-response = input('Do you want to quit? y/n: ')
-if response == 'y':
-    driver.quit()
+response = input('Press ENTER to close the browser: ')
+driver.quit()
 
 # try:
 #     close_all_chats(driver)
