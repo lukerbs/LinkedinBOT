@@ -1,13 +1,7 @@
 # LinkedinBOT
 
 ## About 
-LinkedinBOT is a tool for automating your job search on LinkedIn - Use LinkedinBOT to submit job applications and contact recruiters in your field or industry automatically.
-
-To use this tool, simply define what kind of jobs you want to look for, customize your introductory message for recruiters, and run the bot. 
-
-The bot will automatically create a new connection request and send your custom introduction to hundres of recruiters on LinkedIn that are actively hiring in your specific industry or field.
-
-After the bot starts runnning, just kick back and wait for the recruiters to message you back with opportunities!
+LinkedInBOT is a tool designed to automate your job search on LinkedIn. Utilize LinkedInBOT to automate job applications and connect with recruiters in your industry.
 
 ## Features
 ### connect.py
