@@ -1,2 +1,4 @@
 venv/
 .env
+.ipynb_checkpoints/
+test.ipynb

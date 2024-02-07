@@ -5,13 +5,19 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium import webdriver
 from dotenv import load_dotenv
+import traceback
+import signal
 import time
+import sys
 import os
 
-import traceback
-import sys
 
 print(' - - - LINKEDINBOT - - - \n')
+
+print('- - ENTER PEOPLE SEARCH QUERY - -')
+print('Examples: data science recruiter, google recruiter, Amazon software engineer, etc.')
+INDUSTRY = input('ENTER QUERY: ').strip()
+print('')
 
 def wait():
     input('Press enter to continue: ')
@@ -44,10 +50,6 @@ driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
 USERNAME = os.getenv("USERNAME")
 PASSWORD = os.getenv("PASSWORD")
 
-print('- - ENTER PEOPLE SEARCH QUERY - -')
-print('Examples: data science recruiter, google recruiter, Amazon software engineer, etc.')
-INDUSTRY = input('YOUR QUERY: ').strip()
-
 # Open the website
 url = 'https://www.linkedin.com'
 print(f'Opening: {url}\n')
@@ -57,30 +59,35 @@ driver.get(url)
 time.sleep(3)
 
 # - - LOG IN PAGE - -
-# Find the element by the autocomplete attribute
+# Enter username
 username_field = driver.find_element(By.CSS_SELECTOR, 'input[autocomplete="username"]')
 username_field.send_keys(USERNAME)
 time.sleep(3)
 
+# Enter password
 password_field = driver.find_element(By.ID, 'session_password')
 password_field.send_keys(PASSWORD)
 time.sleep(1)
 
+# Submit sign-in credentials
 sign_in_btn = driver.find_element(By.CSS_SELECTOR, 'button[data-id="sign-in-form__submit-btn"]')
 sign_in_btn.click()
 time.sleep(6)
 
-# wait for challenge if necessary
-page_text = driver.find_element(By.XPATH, "/html/body").text.lower()
+# Wait for security challenge 
 input('Complete security challenge if necessary and press ENTER to continue: ')
 time.sleep(3)
 
+# - - LINKEDIN HOMEPAGE FEED - -
+# Enter search query in LinkedIn search
 search_field = driver.find_element(By.CSS_SELECTOR, 'input[placeholder="Search"]')
-search_field.send_keys(f'{INDUSTRY} recruiter')
+search_field.send_keys(INDUSTRY)
 search_field.send_keys(Keys.RETURN)
 time.sleep(5)
 
 
+# - - PEOPLE RESULTS PAGE - - 
+# Select the 'People' search filter 
 for i in range(5):
     try:
         # Apply people filter 
@@ -91,21 +98,21 @@ for i in range(5):
     except:
         time.sleep(2)
         pass
-    
+
+# Select the 'Actively Hiring' search filter if user is a LinkedIn Premium member
 try:
     xpath_expression = '//button[@aria-label="Actively hiring filter."]'
     actively_hiring_filter = driver.find_element(By.XPATH, xpath_expression)
     actively_hiring_filter.click()
     time.sleep(3)
 except:
-    print('Could not click Actively Hiring Filter')
+    print('ALERT: Could not click Actively Hiring Filter')
     pass
 
 
     
 results_window = driver.current_window_handle
-print("READY!")
-
+print("ALERT: Job search commencing!")
     
 # - - - NEW CONNECTION FUNCTIONS - - - 
 
@@ -122,7 +129,6 @@ def get_profile_name(driver):
 def click_connect(driver):
     print('CLICKING CONNECT')
     full_name = get_profile_name(driver)
-
     contact_box = get_contact_box(driver)
     # Select the 'Connect' button
     xpath_expression = f'//button[contains(@aria-label, "Invite {full_name} to connect")]'
@@ -310,18 +316,24 @@ try:
             time.sleep(3)
         click_next(driver)
         time.sleep(5)
-        
+
+except KeyboardInterrupt:
+    response = input('Press ENTER to close the browser: ')
+    driver.quit()
+    exit()
+
 except Exception as e:
     print('')
     print('- - ERROR: SOMETHING WENT WRONG - - ')
     print(e)
     print(traceback.format_exc())
     print('')
+    response = input('Press ENTER to close the browser: ')
+    driver.quit()
     
 
 
-response = input('Press ENTER to close the browser: ')
-driver.quit()
+
 
 # try:
 #     close_all_chats(driver)
