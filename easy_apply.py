@@ -32,6 +32,10 @@ def load_introduction(name, path='./introduction.txt'):
         
     return intro
 
+def play_beep():
+    # Play a beep sound
+    os.system("echo -n '\a'")
+
 
 load_dotenv()
 
@@ -75,6 +79,7 @@ sign_in_btn.click()
 time.sleep(6)
 
 # Wait for security challenge 
+play_beep()
 input('Complete security challenge if necessary and press ENTER to continue: ')
 time.sleep(3)
 
@@ -119,31 +124,42 @@ for i in range(5):
         time.sleep(3)
 
 if not easy_apply_clicked:
+    play_beep()
     input('Manually select the easy apply filter press ENTER: ')
         
 
 # Location filter 
+play_beep()
 input('Manually select and apply any additional job filters press ENTER: ')
     
-
-
-xpath_expression = '//ul[@class="scaffold-layout__list-container"]'
-jobs_list = driver.find_element(By.XPATH, xpath_expression)
-#print(jobs_list.get_attribute('outerHTML'))
-
-xpath_expression = '//a[@class="disabled ember-view job-card-container__link job-card-list__title"]'
-job_links = jobs_list.find_elements(By.XPATH, xpath_expression)
-print(f'{len(job_links)} jobs discovered.')
-
-
-def play_beep():
-    # Play a beep sound
-    os.system("echo -n '\a'")
-
-# Scroll to job links
 def scroll_to_element(driver, element):
     actions = ActionChains(driver)
     actions.move_to_element(element).perform()
+
+# Load all job links
+def expose_jobs(driver):
+    try:
+        for i in range(5):
+            xpath_expression = '//ul[@class="scaffold-layout__list-container"]'
+            jobs_container = driver.find_element(By.XPATH, xpath_expression)
+            #print(jobs_list.get_attribute('outerHTML'))
+
+            xpath_expression = '//a[@class="disabled ember-view job-card-container__link job-card-list__title"]'
+            job_links = jobs_container.find_elements(By.XPATH, xpath_expression)
+            print(f'{len(job_links)} jobs discovered.')
+
+            #scroll_to_element(driver, job_links[-1])
+            driver.execute_script("arguments[0].scrollIntoView();", job_links[-1])
+            time.sleep(3)
+            if len(job_links) >= 25:
+                return job_links
+        return job_links
+    except Exception as e:
+        print('')
+        print('- - ERROR: SOMETHING WENT WRONG - - ')
+        print(e)
+        print(traceback.format_exc())
+        print('')
 
 
 def check_window(driver, phrase):
@@ -157,6 +173,7 @@ def check_window(driver, phrase):
 def click_next(driver):
     xpath_expression = '//button[@aria-label="Continue to next step"]'
     next_button = driver.find_element(By.XPATH, xpath_expression)
+    scroll_to_element(driver, next_button)
     next_button.click()
     
 def click_review(driver):
@@ -220,7 +237,12 @@ def easy_apply(driver):
             click_next(driver)
             time.sleep(4)
             continue
-        if check_window(driver=driver, phrase='Be sure to include an updated resume') and not check_window(driver=driver, phrase='Review your application'):
+        elif check_window(driver=driver, phrase='Voluntary self identification') and not check_window(driver=driver, phrase='Review your application'):
+            print('You are in the Self Identification section')
+            click_next(driver)
+            time.sleep(3)
+            continue
+        elif check_window(driver=driver, phrase='Be sure to include an updated resume') and not check_window(driver=driver, phrase='Review your application'):
             print('You are on the resume section')
             try:
                 click_next(driver)
@@ -230,7 +252,7 @@ def easy_apply(driver):
                 click_review(driver)
                 time.sleep(3)
                 continue
-        if check_window(driver=driver, phrase='Work authorization') and not check_window(driver=driver, phrase='Review your application'):
+        elif check_window(driver=driver, phrase='Work authorization') and not check_window(driver=driver, phrase='Review your application'):
             print('You are on the work authorization section')
             try:
                 click_next(driver)
@@ -240,34 +262,27 @@ def easy_apply(driver):
                 click_review(driver)
                 time.sleep(3)
                 continue
-        if check_window(driver=driver, phrase='Additional Questions') and not check_window(driver=driver, phrase='Review your application'):
+        elif check_window(driver=driver, phrase='Additional Questions') and not check_window(driver=driver, phrase='Review your application'):
             try:
                 print('You are on the additional questions section')
                 form_element = custom_q_form(driver)
 
                 questions = [q.text for q in form_element.find_elements(By.TAG_NAME, "label")]
                 fields = form_element.find_elements(By.TAG_NAME, "input")
-                for i in range(len(questions)):
-                    input_type = fields[i].get_attribute("type")
-                    requirement = field_requirement(fields[i])
-
-                    print(f'Question: {questions[i]}')
-                    print(f'Type: {input_type}')
-                    print(f'Requirement: {requirement}')
-                    # if fields[i].get_attribute("textContent") is None:
-                    #     if input_type == 'text' and requirement == 'numeric':
-                    #         get_answer(question=questions[i])
-                    #         fields[i].clear()
-                    #         fields[i].send_keys('7')
-                    #         time.sleep(2)
-                    #     elif input_type == 'text':
-                    #         fields[i].clear()
-                    #         fields[i].send_keys('Please reference my attached resume')
-                    #         time.sleep(2)
-
+                
                 # Review the application
                 click_next(driver)
+                time.sleep(2)
+                if check_window(driver=driver, phrase='Additional Questions') and not check_window(driver=driver, phrase='Review your application'):
+                    raise Exception
             except:
+                try:
+                    click_review(driver)
+                    time.sleep(2)
+                    if check_window(driver=driver, phrase='Review your application'):
+                        continue
+                except:
+                    pass
                 play_beep()
                 input('Manually complete section and press ENTER to continue: ')
                 time.sleep(1)
@@ -285,34 +300,68 @@ def easy_apply(driver):
                 # time.sleep(3)
                 # return
 
-        if check_window(driver=driver, phrase='Review your application'):
+        elif check_window(driver=driver, phrase='Review your application'):
             print('You are on the application review section')
             submit_application(driver)
             time.sleep(5)
             close_application(driver)
             return
+
+        else:
+            try:
+                click_next(driver)
+                time.sleep(2)
+            except:
+                pass
+            play_beep()
+            print('Application section not recognized')
+            input('Complete application section and press ENTER to continue.')
+            try:
+                click_next(driver)
+                time.sleep(2)
+            except:
+                pass
         
+        
+# Pagination
+def get_nav_pages(driver):
+    xpath_expression = '//ul[@class="artdeco-pagination__pages artdeco-pagination__pages--number"]'
+    pagination_container = driver.find_element(By.XPATH, xpath_expression)
+    scroll_to_element(driver, pagination_container)
+    pages = pagination_container.find_elements(By.CSS_SELECTOR, "li[data-test-pagination-page-btn]")
+    return pages
+
+pages = get_nav_pages(driver)
     
 try:
-    for link in job_links:
-        scroll_to_element(driver, link)
-        time.sleep(2)
-        link.click()
+    num_pages = len(pages)
+    for i in range(num_pages):
+        pages = get_nav_pages(driver)
+        job_links = expose_jobs(driver)
+        for link in job_links:
+            scroll_to_element(driver, link)
+            time.sleep(2)
+            link.click()
 
-        xpath_expression = '//div[@id="job-details"]'
-        job_description = driver.find_element(By.XPATH, xpath_expression)
-        print(job_description.text[:20])
-        time.sleep(4)
-        
-        try:
-            xpath_expression = '//button[@class="jobs-apply-button artdeco-button artdeco-button--3 artdeco-button--primary ember-view"]'
-            easy_apply_button = driver.find_element(By.XPATH, xpath_expression)
-            easy_apply_button.click()
+            xpath_expression = '//div[@id="job-details"]'
+            job_description = driver.find_element(By.XPATH, xpath_expression)
+            print(job_description.text[:20])
             time.sleep(4)
-        except:
-            continue
-            
-        easy_apply(driver)
+
+            try:
+                xpath_expression = '//button[@class="jobs-apply-button artdeco-button artdeco-button--3 artdeco-button--primary ember-view"]'
+                easy_apply_button = driver.find_element(By.XPATH, xpath_expression)
+                easy_apply_button.click()
+                time.sleep(4)
+            except:
+                continue
+
+            easy_apply(driver)
+        scroll_to_element(driver, pages[i+1])
+        time.sleep(2)
+        pages[i+1].click()
+        print("/n- - CONTINUING TO NEXT PAGE OF JOBS RESULTS - -")
+        time.sleep(5)
     
 except Exception as e:
     print('')
