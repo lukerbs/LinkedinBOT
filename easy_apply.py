@@ -14,9 +14,14 @@ import os
 
 print(' - - - LINKEDINBOT - - - \n')
 
-print('- - ENTER PEOPLE SEARCH QUERY - -')
-print('Examples: data science recruiter, google recruiter, Amazon software engineer, etc.')
-INDUSTRY = input('ENTER QUERY: ').strip()
+def play_beep():
+    # Play a beep sound
+    os.system("echo -n '\a'")
+
+play_beep()
+print('- - ENTER JOB TITLE - -')
+print('Examples: data scientist, sales executive,  etc.')
+INDUSTRY = input('JOB TITLE: ').strip()
 print('')
 
 def wait():
@@ -32,9 +37,7 @@ def load_introduction(name, path='./introduction.txt'):
         
     return intro
 
-def play_beep():
-    # Play a beep sound
-    os.system("echo -n '\a'")
+
 
 
 load_dotenv()
