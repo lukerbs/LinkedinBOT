@@ -1,4 +1,5 @@
 venv/
-.env
 .ipynb_checkpoints/
 test.ipynb
+.DS_Store
+config.json

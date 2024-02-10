@@ -11,12 +11,132 @@ import time
 import sys
 import os
 
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+import pygame
+
+import tkinter as tk
+from tkinter import messagebox
+from tkinter import font 
+import time
+import json
+
+
+
+
+
+
+def success_chime():
+    pygame.mixer.init()
+    pygame.mixer.music.load('./assets/success_chime.mp3')
+    pygame.mixer.music.play()
+
+def play_beep():
+    # Play a beep sound
+    os.system("echo -n '\a'")
+
+
+def show_popup(message):
+    play_beep()
+    popup = tk.Toplevel()
+    popup.title("Action Required")
+
+    # Custom size of the pop-up window
+    window_width = 300
+    window_height = 200
+    
+    # Calculate the center position of the screen
+    screen_width = popup.winfo_screenwidth()
+    screen_height = popup.winfo_screenheight()
+    x_coordinate =  (screen_width - window_width) - ((screen_width - window_width) // 8 )
+    y_coordinate = ((screen_height - window_height) // 8)
+
+    # Set the window location and size
+    popup.geometry("{}x{}+{}+{}".format(window_width, window_height, x_coordinate, y_coordinate))
+    popup.attributes("-topmost", True)
+
+    header = tk.Label(popup, text='ALERT:', wraplength=250, font=font.Font(weight="bold"), foreground="red")
+    label = tk.Label(popup, text=message, wraplength=250, font=font.Font(weight="bold"))
+    continue_button = tk.Button(popup, text="CONTINUE", command=popup.destroy, cursor="pointinghand")
+
+    header.pack(side="top", pady=10)
+    label.pack(side="top", pady=10)  
+    continue_button.pack(side="top", pady=10) 
+    popup.wait_window()
+    popup.update()
+
+def submit_input(input_popup, entry, input_var):
+    input_text = entry.get()
+    input_var.set(input_text)
+    input_popup.destroy()
+
+def show_input_popup(title, message, password=False):
+    play_beep()
+    input_popup = tk.Toplevel()
+    input_popup.title(title)
+
+    # Custom size of the pop-up window
+    window_width = 300
+    window_height = 200
+    
+    # Calculate the center position of the screen
+    screen_width = input_popup.winfo_screenwidth()
+    screen_height = input_popup.winfo_screenheight()
+    x_coordinate = (screen_width - window_width) // 2
+    y_coordinate = (screen_height - window_height) // 2
+
+    input_popup.geometry("{}x{}+{}+{}".format(window_width, window_height, x_coordinate, y_coordinate))
+    input_popup.attributes("-topmost", True)
+
+    label = tk.Label(input_popup, text=message, wraplength=250, font=font.Font(weight="bold"))
+    label.pack(pady=20)
+
+    input_var = tk.StringVar()
+
+    entry = tk.Entry(input_popup, textvariable=input_var, show="*" if password else "")
+    entry.pack()
+    entry.focus_set()
+    entry.bind("<Return>", lambda event: submit_input(input_popup, entry, input_var))
+    #entry.bind("<Return>", lambda event: submit_input(input_popup, entry))
+
+    input_popup.wait_window()
+    input_popup.update()
+    return input_var.get().strip()
+
+main_window = tk.Tk()
+main_window.withdraw()
+# INDUSTRY = show_input_popup(title="Job Search Query", message="Enter and submit your job search query.\nE.g.: 'data scientist', 'sales executive, etc.")
+
+
+try:
+    # Load JSON from a file
+    with open('./config.json', 'r') as file:
+        config = json.load(file)
+    USERNAME = config['Email']
+    PASSWORD = config['Password']
+except:
+    USERNAME = show_input_popup(title="Login to LinkedIn", message='Enter login email:')
+    #USERNAME = input_text.strip()
+    time.sleep(1)
+    PASSWORD = show_input_popup(title="Login to LinkedIn", message='Enter password:')
+    time.sleep(1)
+
+    config = {
+        "Email": USERNAME,
+        "Password": PASSWORD
+    }
+
+    # Write dictionary to a JSON file
+    with open('./config.json', 'w') as file:
+        json.dump(config, file, indent=4)
+
+# Load credentials from .env file
+
 
 print(' - - - LINKEDINBOT - - - \n')
 
 print('- - ENTER PEOPLE SEARCH QUERY - -')
-print('Examples: data science recruiter, google recruiter, Amazon software engineer, etc.')
-INDUSTRY = input('ENTER QUERY: ').strip()
+INDUSTRY = show_input_popup(title="JOB QUERY", message="Enter and submit your recruiter search query.\n E.g.: data science recruiter, google recruiter etc.", password=False)
+
 print('')
 
 def wait():
@@ -32,9 +152,6 @@ def load_introduction(name, path='./introduction.txt'):
         
     return intro
 
-
-load_dotenv()
-
 # Assign custom user agent 
 user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 chrome_options = webdriver.ChromeOptions()
@@ -45,10 +162,6 @@ chrome_path = ChromeDriverManager().install()
 chrome_service = Service(chrome_path)
 driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
 #driver.maximize_window()
-
-# Load credentials from .env file
-USERNAME = os.getenv("USERNAME")
-PASSWORD = os.getenv("PASSWORD")
 
 # Open the website
 url = 'https://www.linkedin.com'
@@ -75,8 +188,8 @@ sign_in_btn.click()
 time.sleep(6)
 
 # Wait for security challenge 
-input('Complete security challenge if necessary and press ENTER to continue: ')
-time.sleep(3)
+show_popup(message='Manually complete security challenge in browser if necessary and click CONTINUE.\n\n(If you are already on the LinkedIn homepage, just click CONTINUE): ')
+time.sleep(1)
 
 # - - LINKEDIN HOMEPAGE FEED - -
 # Enter search query in LinkedIn search

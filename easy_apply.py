@@ -10,22 +10,137 @@ import signal
 import time
 import sys
 import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
+import pygame
+
+import tkinter as tk
+from tkinter import messagebox
+from tkinter import font 
+import time
+import json
 
 
-print(' - - - LINKEDINBOT - - - \n')
+def success_chime():
+    pygame.mixer.init()
+    pygame.mixer.music.load('./assets/success_chime.mp3')
+    pygame.mixer.music.play()
 
 def play_beep():
     # Play a beep sound
     os.system("echo -n '\a'")
 
-play_beep()
-print('- - ENTER JOB TITLE - -')
-print('Examples: data scientist, sales executive,  etc.')
-INDUSTRY = input('JOB TITLE: ').strip()
+
+def show_popup(message):
+    play_beep()
+    popup = tk.Toplevel()
+    popup.title("Action Required")
+
+    # Custom size of the pop-up window
+    window_width = 300
+    window_height = 200
+    
+    # Calculate the center position of the screen
+    screen_width = popup.winfo_screenwidth()
+    screen_height = popup.winfo_screenheight()
+    x_coordinate =  (screen_width - window_width) - ((screen_width - window_width) // 8 )
+    y_coordinate = ((screen_height - window_height) // 8)
+
+    # Set the window location and size
+    popup.geometry("{}x{}+{}+{}".format(window_width, window_height, x_coordinate, y_coordinate))
+    popup.attributes("-topmost", True)
+
+    header = tk.Label(popup, text='ALERT:', wraplength=250, font=font.Font(weight="bold"), foreground="red")
+    label = tk.Label(popup, text=message, wraplength=250, font=font.Font(weight="bold"))
+    continue_button = tk.Button(popup, text="CONTINUE", command=popup.destroy, cursor="pointinghand")
+
+    header.pack(side="top", pady=10)
+    label.pack(side="top", pady=10)  
+    continue_button.pack(side="top", pady=10) 
+    popup.wait_window()
+    popup.update()
+
+def submit_input(input_popup, entry, input_var):
+    input_text = entry.get()
+    input_var.set(input_text)
+    input_popup.destroy()
+
+def show_input_popup(title, message, password=False):
+    play_beep()
+    input_popup = tk.Toplevel()
+    input_popup.title(title)
+
+    # Custom size of the pop-up window
+    window_width = 300
+    window_height = 200
+    
+    # Calculate the center position of the screen
+    screen_width = input_popup.winfo_screenwidth()
+    screen_height = input_popup.winfo_screenheight()
+    x_coordinate = (screen_width - window_width) // 2
+    y_coordinate = (screen_height - window_height) // 2
+
+    input_popup.geometry("{}x{}+{}+{}".format(window_width, window_height, x_coordinate, y_coordinate))
+    input_popup.attributes("-topmost", True)
+
+    label = tk.Label(input_popup, text=message, wraplength=250, font=font.Font(weight="bold"))
+    label.pack(pady=20)
+
+    input_var = tk.StringVar()
+
+    entry = tk.Entry(input_popup, textvariable=input_var, show="*" if password else "")
+    entry.pack()
+    entry.focus_set()
+    entry.bind("<Return>", lambda event: submit_input(input_popup, entry, input_var))
+    #entry.bind("<Return>", lambda event: submit_input(input_popup, entry))
+
+    input_popup.wait_window()
+    input_popup.update()
+    return input_var.get().strip()
+
+main_window = tk.Tk()
+main_window.withdraw()
+# INDUSTRY = show_input_popup(title="Job Search Query", message="Enter and submit your job search query.\nE.g.: 'data scientist', 'sales executive, etc.")
+
+
+
+
+
+try:
+    # Load JSON from a file
+    with open('./config.json', 'r') as file:
+        config = json.load(file)
+    USERNAME = config['Email']
+    PASSWORD = config['Password']
+except:
+    USERNAME = show_input_popup(title="Login to LinkedIn", message='Enter login email:')
+    #USERNAME = input_text.strip()
+    time.sleep(1)
+    PASSWORD = show_input_popup(title="Login to LinkedIn", message='Enter password:')
+    time.sleep(1)
+
+    config = {
+        "Email": USERNAME,
+        "Password": PASSWORD
+    }
+
+    # Write dictionary to a JSON file
+    with open('./config.json', 'w') as file:
+        json.dump(config, file, indent=4)
+
+# Load credentials from .env file
+
+
+
+
+print('\n - - - LINKEDINBOT - - - \n')
+
+
+INDUSTRY = show_input_popup(title="Job Search Query", message="Enter and submit your job search query.\nE.g.: 'data scientist', 'sales executive, etc.")
 print('')
 
 def wait():
     input('Press enter to continue: ')
+
 
 def load_introduction(name, path='./introduction.txt'):
     with open(path, 'r') as file:
@@ -38,10 +153,6 @@ def load_introduction(name, path='./introduction.txt'):
     return intro
 
 
-
-
-load_dotenv()
-
 # Assign custom user agent 
 user_agent = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
 chrome_options = webdriver.ChromeOptions()
@@ -53,13 +164,11 @@ chrome_service = Service(chrome_path)
 driver = webdriver.Chrome(service=chrome_service, options=chrome_options)
 #driver.maximize_window()
 
-# Load credentials from .env file
-USERNAME = os.getenv("USERNAME")
-PASSWORD = os.getenv("PASSWORD")
+
 
 # Open the website
 url = 'https://www.linkedin.com'
-print(f'Opening: {url}\n')
+print(f'\nOpening: {url}\n')
 driver.get(url)
 
 # Optional: You can add additional actions here, such as interacting with elements on the page
@@ -79,11 +188,9 @@ time.sleep(1)
 # Submit sign-in credentials
 sign_in_btn = driver.find_element(By.CSS_SELECTOR, 'button[data-id="sign-in-form__submit-btn"]')
 sign_in_btn.click()
-time.sleep(6)
 
 # Wait for security challenge 
-play_beep()
-input('Complete security challenge if necessary and press ENTER to continue: ')
+show_popup(message='Complete security challenge if necessary and press CONTINUE.\n\n(If you are already on the LinkedIn homepage, just press CONTINUE): ')
 time.sleep(3)
 
 # - - LINKEDIN HOMEPAGE FEED - -
@@ -127,13 +234,11 @@ for i in range(5):
         time.sleep(3)
 
 if not easy_apply_clicked:
-    play_beep()
-    input('Manually select the easy apply filter press ENTER: ')
+    show_popup(message='Manually select the easy apply filter press CONTINUE: ')
         
 
 # Location filter 
-play_beep()
-input('Manually select and apply any additional job filters press ENTER: ')
+show_popup(message='Manually select and apply any additional job search filters in the browser press CONTINUE:')
     
 def scroll_to_element(driver, element):
     actions = ActionChains(driver)
@@ -141,6 +246,7 @@ def scroll_to_element(driver, element):
 
 # Load all job links
 def expose_jobs(driver):
+    print('\nALERT: Please wait. Scanning for jobs applications.')
     try:
         for i in range(5):
             xpath_expression = '//ul[@class="scaffold-layout__list-container"]'
@@ -149,13 +255,15 @@ def expose_jobs(driver):
 
             xpath_expression = '//a[@class="disabled ember-view job-card-container__link job-card-list__title"]'
             job_links = jobs_container.find_elements(By.XPATH, xpath_expression)
-            print(f'{len(job_links)} jobs discovered.')
-
-            #scroll_to_element(driver, job_links[-1])
-            driver.execute_script("arguments[0].scrollIntoView();", job_links[-1])
-            time.sleep(3)
+            print(f'{len(job_links)} jobs discovered.\n')
             if len(job_links) >= 25:
                 return job_links
+
+            #scroll_to_element(driver, job_links[-1])
+            for job in job_links:
+                driver.execute_script("arguments[0].scrollIntoView();", job)
+                time.sleep(.5)
+            driver.execute_script("arguments[0].scrollIntoView();", job_links[0])
         return job_links
     except Exception as e:
         print('')
@@ -236,17 +344,17 @@ def easy_apply(driver):
                 return
             except:
                 pass
-            print('You are in the contact section')
+            #print('You are in the contact section')
             click_next(driver)
             time.sleep(4)
             continue
         elif check_window(driver=driver, phrase='Voluntary self identification') and not check_window(driver=driver, phrase='Review your application'):
-            print('You are in the Self Identification section')
+            #print('You are in the Self Identification section')
             click_next(driver)
             time.sleep(3)
             continue
         elif check_window(driver=driver, phrase='Be sure to include an updated resume') and not check_window(driver=driver, phrase='Review your application'):
-            print('You are on the resume section')
+            #print('You are on the resume section')
             try:
                 click_next(driver)
                 time.sleep(3)
@@ -256,7 +364,7 @@ def easy_apply(driver):
                 time.sleep(3)
                 continue
         elif check_window(driver=driver, phrase='Work authorization') and not check_window(driver=driver, phrase='Review your application'):
-            print('You are on the work authorization section')
+            #print('You are on the work authorization section')
             try:
                 click_next(driver)
                 time.sleep(3)
@@ -267,7 +375,7 @@ def easy_apply(driver):
                 continue
         elif check_window(driver=driver, phrase='Additional Questions') and not check_window(driver=driver, phrase='Review your application'):
             try:
-                print('You are on the additional questions section')
+                #print('You are on the additional questions section')
                 form_element = custom_q_form(driver)
 
                 questions = [q.text for q in form_element.find_elements(By.TAG_NAME, "label")]
@@ -286,8 +394,7 @@ def easy_apply(driver):
                         continue
                 except:
                     pass
-                play_beep()
-                input('Manually complete section and press ENTER to continue: ')
+                show_popup(message='Manually complete section and press CONTINUE:')
                 time.sleep(1)
                 try:
                     click_next(driver)
@@ -296,29 +403,29 @@ def easy_apply(driver):
                 except:
                     click_review(driver)
                     time.sleep(3)
-                # input('Press enter to close application: ')
-                # close_application(driver)
-                # time.sleep(3)
-                # discard_application(driver)
-                # time.sleep(3)
-                # return
 
         elif check_window(driver=driver, phrase='Review your application'):
-            print('You are on the application review section')
+            time.sleep(1)
+            #print('You are on the application review section')
             submit_application(driver)
+            print('\nALERT: Your application has successfully been submitted!')
+            success_chime()
             time.sleep(5)
             close_application(driver)
             return
 
         else:
             try:
+                time.sleep(1)
                 click_next(driver)
                 time.sleep(2)
             except:
-                pass
-            play_beep()
-            print('Application section not recognized')
-            input('Complete application section and press ENTER to continue.')
+                try:
+                    click_review(driver)
+                    time.sleep(2)
+                except:
+                    pass
+            show_popup(message='Application section not recognized.\nComplete application section and press CONTINUE:')
             try:
                 click_next(driver)
                 time.sleep(2)
@@ -348,7 +455,7 @@ try:
 
             xpath_expression = '//div[@id="job-details"]'
             job_description = driver.find_element(By.XPATH, xpath_expression)
-            print(job_description.text[:20])
+            #print(job_description.text[:20])
             time.sleep(4)
 
             try:
@@ -363,7 +470,7 @@ try:
         scroll_to_element(driver, pages[i+1])
         time.sleep(2)
         pages[i+1].click()
-        print("/n- - CONTINUING TO NEXT PAGE OF JOBS RESULTS - -")
+        print("\nALERT: Continuing to next page of job results.")
         time.sleep(5)
     
 except Exception as e:
@@ -373,7 +480,7 @@ except Exception as e:
     print(traceback.format_exc())
     print('')
     
-
+play_beep()
 response = input('Do you want to quit? y/n: ')
 if response == 'y':
     driver.quit()

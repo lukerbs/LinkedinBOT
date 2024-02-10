@@ -22,20 +22,21 @@ LinkedInBOT is a tool designed to automate your job search on LinkedIn. Utilize 
 	- `source venv/bin/activate`
 4. Install Dependencies:
 	- `pip3 install -r requirements.txt`
-5. Configure LinkedIn username and password in the `.env` file
 
 ## Usage: Recruiter Messaging Bot
 1. Customize your message for recruiters in `introduction.txt`
 	- NOTE: Be sure to leave the "FIRST_NAME" string in `introduction.txt` 
 	- NOTE: Your introduction should not be longer than 280 characters
 2. Start the bot by running `python3 connect.py`
-3. Enter your search query (e.g. 'data science recruiter', 'Amazon recruiter', etc.)
+3. Enter your LinkedIn username and password in the pop-up window if this is your first time using the bot.
+4. Enter your search query (e.g. 'data science recruiter', 'Amazon recruiter', etc.) in the pop-up
 
 ## Usage: Job Application Bot 
 1. Start the bot by running `python3 easy_apply.py`
-2. Enter your desired job title 
+2. Enter your LinkedIn username and password in the pop-up window if this is your first time using the bot.
+3. Enter your desired job title in the pop-up window (e.g.: data scientist, sales executive, etc.)
 
 
 ## Tips
 1. Create a tiny URL that links to your public resume on Google Drive or Google Docs and include the url at the bottom of your custom introduction in `introduction.txt`
-
+2. If you accidentally entered the wrong username and password (or if you need to re-enter your username and password), simply delete the `config.json` file in the root of the project directory and re-run the bot
