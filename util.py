@@ -12,6 +12,14 @@ pygame.mixer.init()
 
 from __init__ import main_window, driver
 
+def cleanup():
+    '''
+    Clean up function when application is closed. 
+    Closes browser 
+    '''
+    driver.quit()
+    return
+
 
 def success_chime():
     pygame.mixer.music.load('./assets/success_chime.mp3')

@@ -11,10 +11,12 @@ import signal
 import time
 import sys
 import os
+import atexit
 
 from __init__ import main_window, driver
-from util import success_chime, show_popup, show_input_popup, load_config
+from util import success_chime, show_popup, show_input_popup, load_config, cleanup
 
+atexit.register(cleanup)
 
 print('\n - - - LINKEDINBOT - - - \n')
 
