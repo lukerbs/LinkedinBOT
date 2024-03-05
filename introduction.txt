@@ -1,2 +1,2 @@
 Hi FIRST_NAME, I am reaching out to recruiters in search of new career opportunities. I am skilled in Python, machine learning modeling, cloud platforms, data engineering, and more. Any opportunities that I might be a good fit for? Thanks for the help!
-Resume: http://tinyurl.com/luke-kerbs-resume
+<google-doc-link-to-resume-here>
