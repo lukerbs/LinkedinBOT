@@ -1,19 +1,15 @@
 from selenium.webdriver.common.action_chains import ActionChains
-from webdriver_manager.chrome import ChromeDriverManager
-from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 from dotenv import load_dotenv
-import tkinter
 import traceback
-import signal
 import time
-import sys
-import os
 import atexit
 
-from __init__ import main_window, driver
+from __init__ import driver
 from util import success_chime, show_popup, show_input_popup, load_config, cleanup
 
 atexit.register(cleanup)
@@ -31,41 +27,62 @@ print('')
 def wait():
     input('Press enter to continue: ')
 
+def get_element(by, selector, timeout):
+    wait = WebDriverWait(driver, timeout)
+    try:
+        element = wait.until(EC.presence_of_element_located((by, selector)))
+        return element
+    except TimeoutException:
+        print(f'TimeoutException: Could not find element within {timeout} seconds.\n')
+        return None
 
-def load_introduction(name, path='./introduction.txt'):
-    with open(path, 'r') as file:
-        file_content = file.read()
-    intro = file_content.replace('FIRST_NAME', name)
-    if len(intro) > 300:
-        print(f'ERROR:\nYour introduction is too long ({len(intro)} chars).\nShorten your intro to no more than 300 characters and restart the bot.')
-        exit()
-        
-    return intro
+
+def check_sign_in_page():
+    xpath_expression = 'a[class="sign-in-form__sign-in-cta btn-md btn-secondary babybear:w-full block mb-3 mx-auto min-h-[40px] py-1"]'
+    sign_in_btn = get_element(by=By.CLASS_NAME, selector=xpath_expression, timeout=5)
+    return sign_in_btn
+
+    
+
 
 
 # Open the website
-url = 'https://www.linkedin.com'
-print(f'\nOpening: {url}\n')
-driver.get(url)
+# url = 'https://www.linkedin.com'
+# print(f'\nOpening: {url}\n')
+# driver.get(url)
 
-# Optional: You can add additional actions here, such as interacting with elements on the page
-time.sleep(3)
+
 
 # - - LOG IN PAGE - -
 # Enter username
-username_field = driver.find_element(By.CSS_SELECTOR, 'input[autocomplete="username"]')
-username_field.send_keys(USERNAME)
-time.sleep(3)
+version_2_btn = check_sign_in_page()
+if not version_2_btn:
+    username_field = get_element(by=By.CSS_SELECTOR, selector='input[autocomplete="username"]', timeout=3)
+    username_field.send_keys(USERNAME)
+    time.sleep(1)
 
-# Enter password
-password_field = driver.find_element(By.ID, 'session_password')
-password_field.send_keys(PASSWORD)
-time.sleep(1)
+    password_field = get_element(by=By.ID, selector='session_password', timeout=3)
+    password_field.send_keys(PASSWORD)
+    time.sleep(1)
 
-# Submit sign-in credentials
-sign_in_btn = driver.find_element(By.CSS_SELECTOR, 'button[data-id="sign-in-form__submit-btn"]')
-sign_in_btn.click()
+    # Submit sign-in credentials
+    sign_in_btn = driver.find_element(By.CSS_SELECTOR, 'button[data-id="sign-in-form__submit-btn"]')
+    sign_in_btn.click()
+else:
+    version_2_btn.click()
+    username_field = get_element(by=By.CSS_SELECTOR, selector='input[id="username"]', timeout=3)
+    username_field.send_keys(USERNAME)
+    time.sleep(1)
 
+    password_field = get_element(by=By.ID, selector='password', timeout=3)
+    password_field.send_keys(PASSWORD)
+    time.sleep(1)
+
+    # Submit sign-in credentials
+    sign_in_btn = driver.find_element(By.CSS_SELECTOR, 'button[class="btn__primary--large from__button--floating"]')
+    sign_in_btn.click()
+
+# - - SECURITY CHALLENGE - -
 # Wait for security challenge 
 show_popup(message='Complete security challenge if necessary and press CONTINUE.\n\n(If you are already on the LinkedIn homepage, just press CONTINUE): ')
 time.sleep(3)
@@ -76,7 +93,6 @@ search_field = driver.find_element(By.CSS_SELECTOR, 'input[placeholder="Search"]
 search_field.send_keys(INDUSTRY)
 search_field.send_keys(Keys.RETURN)
 time.sleep(5)
-
 
 
 #- - PEOPLE RESULTS PAGE - - 
@@ -98,23 +114,19 @@ except Exception as e:
     print(f'ERROR: {e}')
     
 # Select the 'Easy Apply' filter
-easy_apply_clicked = False
-for i in range(5):
-    try:
-        xpath_expression = '//button[@aria-label="Easy Apply filter."]'
-        actively_hiring_filter = driver.find_element(By.XPATH, xpath_expression)
-        actively_hiring_filter.click()
-        easy_apply_clicked = True
-        time.sleep(3)
-        break
-    except:
-        time.sleep(3)
+xpath_expression = '//button[@aria-label="Easy Apply filter."]'
+actively_hiring_filter = get_element(by=By.XPATH, selector=xpath_expression, timeout=5)
+if actively_hiring_filter:
+    actively_hiring_filter.click()
+    easy_apply_clicked = True
+else:
+    easy_apply_clicked = False
 
 if not easy_apply_clicked:
     show_popup(message='Manually select the easy apply filter press CONTINUE: ')
         
 
-# Location filter 
+# Manually add any additional job search filters.
 show_popup(message='Manually select and apply any additional job search filters in the browser press CONTINUE:')
     
 def scroll_to_element(driver, element):
@@ -128,26 +140,28 @@ def expose_jobs(driver):
         for i in range(5):
             xpath_expression = '//ul[@class="scaffold-layout__list-container"]'
             jobs_container = driver.find_element(By.XPATH, xpath_expression)
-            #print(jobs_list.get_attribute('outerHTML'))
 
-            xpath_expression = '//a[@class="disabled ember-view job-card-container__link job-card-list__title"]'
+            xpath_expression = '//a[@class="disabled ember-view job-card-container__link job-card-list__title job-card-list__title--link"]'
             job_links = jobs_container.find_elements(By.XPATH, xpath_expression)
-            print(f'{len(job_links)} jobs discovered.\n')
-            if len(job_links) >= 25:
-                return job_links
 
-            #scroll_to_element(driver, job_links[-1])
+            print(f'Job Links Discovered: {len(job_links)}\n')
+            if len(job_links) >= 24:
+                # Return job links if reached 24 links.
+                return job_links
+            
+
             for job in job_links:
+                # Scroll to each link in list down to the bottom of the list.
                 driver.execute_script("arguments[0].scrollIntoView();", job)
                 time.sleep(.5)
+            
+            # Scroll to top of list.
             driver.execute_script("arguments[0].scrollIntoView();", job_links[0])
+
         return job_links
     except Exception as e:
-        print('')
-        print('- - ERROR: SOMETHING WENT WRONG - - ')
-        print(e)
-        print(traceback.format_exc())
-        print('')
+        print(f"WARNING: No job links discovered.")
+        return None
 
 
 def check_window(driver, phrase):
@@ -309,7 +323,6 @@ def easy_apply(driver):
             except:
                 pass
         
-        
 # Pagination
 def get_nav_pages(driver):
     xpath_expression = '//ul[@class="artdeco-pagination__pages artdeco-pagination__pages--number"]'
@@ -327,23 +340,33 @@ try:
         job_links = expose_jobs(driver)
         for link in job_links:
             scroll_to_element(driver, link)
-            time.sleep(2)
+            #time.sleep(2)
             link.click()
 
             xpath_expression = '//div[@id="job-details"]'
             job_description = driver.find_element(By.XPATH, xpath_expression)
             #print(job_description.text[:20])
-            time.sleep(2.3)
+            #time.sleep(2.3)
 
-            try:
-                xpath_expression = '//button[@class="jobs-apply-button artdeco-button artdeco-button--3 artdeco-button--primary ember-view"]'
-                easy_apply_button = driver.find_element(By.XPATH, xpath_expression)
-                easy_apply_button.click()
-                time.sleep(4)
-            except:
+            # Click Job Application
+            xpath_expression = '//button[@class="jobs-apply-button artdeco-button artdeco-button--3 artdeco-button--primary ember-view"]'
+            easy_apply_button = get_element(by=By.XPATH, selector=xpath_expression, timeout=3)
+            if not easy_apply_button:
                 continue
+            easy_apply_button.click()
+            time.sleep(4)
+
+            # try:
+            #     xpath_expression = '//button[@class="jobs-apply-button artdeco-button artdeco-button--3 artdeco-button--primary ember-view"]'
+            #     easy_apply_button = driver.find_element(By.XPATH, xpath_expression)
+            #     easy_apply_button.click()
+            #     time.sleep(4)
+            # except:
+            #     continue
 
             easy_apply(driver)
+
+        # Go to next page of job search results
         scroll_to_element(driver, pages[i+1])
         time.sleep(2)
         pages[i+1].click()
@@ -351,13 +374,9 @@ try:
         time.sleep(5)
     
 except Exception as e:
+    message = 'An unexpected error occurred.\nPress continue to close the program. Restart the program to resume.'
+    show_popup(message=message, error=True)
     print('')
     print('- - ERROR: SOMETHING WENT WRONG - - ')
-    print(e)
     print(traceback.format_exc())
     print('')
-    
-play_beep()
-response = input('Do you want to quit? y/n: ')
-if response == 'y':
-    driver.quit()

@@ -14,7 +14,7 @@ with open('requirements.txt') as f:
 APP = ['easy_apply.py']
 
 DATA_FILES = [
-    ('assets', ['assets/success_chime.mp3', 'assets/pop.mp3']), 
+    ('assets', ['assets/success_chime.mp3', 'assets/pop.mp3', 'assets/error.mp3']), 
     'config.json',
     ('tcl8.6', ['/Library/Frameworks/Python.framework/Versions/3.10/lib/tcl8.6']),
     ('tk8.6', ['/Library/Frameworks/Python.framework/Versions/3.10/lib/tk8.6'])

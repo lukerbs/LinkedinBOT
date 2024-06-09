@@ -29,8 +29,15 @@ def play_pop():
     pygame.mixer.music.load('./assets/pop.mp3')
     pygame.mixer.music.play()
 
-def show_popup(message):
-    play_pop()
+def play_error():
+    pygame.mixer.music.load('./assets/error.mp3')
+    pygame.mixer.music.play()
+
+def show_popup(message, error=False):
+    if error:
+        play_error()
+    else:
+        play_pop()
     popup = tk.Toplevel()
     popup.title("Action Required")
 
