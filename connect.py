@@ -11,6 +11,10 @@ import time
 import sys
 import os
 
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
+
 from __init__ import main_window, driver
 from util import success_chime, show_popup, show_input_popup, load_config
 
@@ -20,6 +24,22 @@ print('\n - - - LINKEDINBOT - - - \n')
 config = load_config()
 USERNAME = config['Email']
 PASSWORD = config['Password']
+
+def get_element(by, selector, timeout):
+    wait = WebDriverWait(driver, timeout)
+    try:
+        element = wait.until(EC.presence_of_element_located((by, selector)))
+        return element
+    except TimeoutException:
+        print(f'TimeoutException: Could not find element within {timeout} seconds.\n')
+        return None
+
+def check_sign_in_page():
+    xpath_expression = '//a[@data-test-id="home-hero-sign-in-cta"]'
+    sign_in_btn = get_element(by=By.XPATH, selector=xpath_expression, timeout=3)
+    return sign_in_btn
+
+
 
 print('- - ENTER PEOPLE SEARCH QUERY - -')
 INDUSTRY = show_input_popup(title="JOB QUERY", message="Enter and submit your recruiter search query.\n E.g.: data science recruiter, google recruiter etc.", password=False)
@@ -38,21 +58,37 @@ def load_introduction(name, path='./introduction.txt'):
 # Optional: You can add additional actions here, such as interacting with elements on the page
 time.sleep(3)
 
+# - - - - - - -  M A I N   E X E C U T I O N   S T A R T - - - - - - - - - 
 # - - LOG IN PAGE - -
 # Enter username
-username_field = driver.find_element(By.CSS_SELECTOR, 'input[autocomplete="username"]')
-username_field.send_keys(USERNAME)
-time.sleep(3)
+version_2_btn = check_sign_in_page()
+if not version_2_btn:
+    print(f"Sign in version 1")
+    username_field = get_element(by=By.CSS_SELECTOR, selector='input[autocomplete="username"]', timeout=3)
+    username_field.send_keys(USERNAME)
+    time.sleep(1)
 
-# Enter password
-password_field = driver.find_element(By.ID, 'session_password')
-password_field.send_keys(PASSWORD)
-time.sleep(1)
+    password_field = get_element(by=By.ID, selector='session_password', timeout=3)
+    password_field.send_keys(PASSWORD)
+    time.sleep(1)
 
-# Submit sign-in credentials
-sign_in_btn = driver.find_element(By.CSS_SELECTOR, 'button[data-id="sign-in-form__submit-btn"]')
-sign_in_btn.click()
-time.sleep(6)
+    # Submit sign-in credentials
+    sign_in_btn = driver.find_element(By.CSS_SELECTOR, 'button[data-id="sign-in-form__submit-btn"]')
+    sign_in_btn.click()
+else:
+    print(f"Sign in version 2")
+    version_2_btn.click()
+    username_field = get_element(by=By.CSS_SELECTOR, selector='input[id="username"]', timeout=3)
+    username_field.send_keys(USERNAME)
+    time.sleep(1)
+
+    password_field = get_element(by=By.ID, selector='password', timeout=3)
+    password_field.send_keys(PASSWORD)
+    time.sleep(1)
+
+    # Submit sign-in credentials
+    sign_in_btn = driver.find_element(By.CSS_SELECTOR, 'button[class="btn__primary--large from__button--floating"]')
+    sign_in_btn.click()
 
 # Wait for security challenge 
 show_popup(message='Manually complete security challenge in browser if necessary and click CONTINUE.\n\n(If you are already on the LinkedIn homepage, just click CONTINUE): ')
