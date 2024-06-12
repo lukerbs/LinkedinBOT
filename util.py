@@ -57,7 +57,7 @@ def show_popup(message, error=False):
 
     header = tk.Label(popup, text='ALERT:', wraplength=250, font=font.Font(weight="bold"), foreground="red")
     label = tk.Label(popup, text=message, wraplength=250, font=font.Font(weight="bold"))
-    continue_button = tk.Button(popup, text="CONTINUE", command=popup.destroy, cursor="pointinghand")
+    continue_button = tk.Button(popup, text="CONTINUE", command=popup.destroy)#, cursor="pointinghand")
 
     header.pack(side="top", pady=10)
     label.pack(side="top", pady=10)  
