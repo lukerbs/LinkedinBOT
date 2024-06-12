@@ -9,10 +9,11 @@ import traceback
 from pprint import pprint
 import time
 import atexit
+import os
 
 import openai
 
-CHATGPT = None
+CHATGPT = ""
 client = openai.OpenAI(api_key=CHATGPT)
 def chatgpt(query:str, model='gpt-4-turbo-preview', max_tokens=None):
     # select model from ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo-preview', 'gpt-4-32k', 'gpt-4-1106-preview']
