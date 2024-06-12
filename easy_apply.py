@@ -6,8 +6,27 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 from dotenv import load_dotenv
 import traceback
+from pprint import pprint
 import time
 import atexit
+
+import openai
+
+CHATGPT = None
+client = openai.OpenAI(api_key=CHATGPT)
+def chatgpt(query:str, model='gpt-4-turbo-preview', max_tokens=None):
+    # select model from ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo-preview', 'gpt-4-32k', 'gpt-4-1106-preview']
+    completion = client.chat.completions.create(
+        model=model,
+        max_tokens=max_tokens, #4000
+        messages=[
+            {"role": "user", "content": query}
+        ]
+    )
+
+    response = completion.choices[0].message.content
+
+    return response
 
 from __init__ import driver
 from util import success_chime, show_popup, show_input_popup, load_config, cleanup
@@ -38,96 +57,9 @@ def get_element(by, selector, timeout):
 
 
 def check_sign_in_page():
-    xpath_expression = 'a[class="sign-in-form__sign-in-cta btn-md btn-secondary babybear:w-full block mb-3 mx-auto min-h-[40px] py-1"]'
-    sign_in_btn = get_element(by=By.CLASS_NAME, selector=xpath_expression, timeout=5)
+    xpath_expression = '//a[@data-test-id="home-hero-sign-in-cta"]'
+    sign_in_btn = get_element(by=By.XPATH, selector=xpath_expression, timeout=3)
     return sign_in_btn
-
-    
-
-
-
-# Open the website
-# url = 'https://www.linkedin.com'
-# print(f'\nOpening: {url}\n')
-# driver.get(url)
-
-
-
-# - - LOG IN PAGE - -
-# Enter username
-version_2_btn = check_sign_in_page()
-if not version_2_btn:
-    username_field = get_element(by=By.CSS_SELECTOR, selector='input[autocomplete="username"]', timeout=3)
-    username_field.send_keys(USERNAME)
-    time.sleep(1)
-
-    password_field = get_element(by=By.ID, selector='session_password', timeout=3)
-    password_field.send_keys(PASSWORD)
-    time.sleep(1)
-
-    # Submit sign-in credentials
-    sign_in_btn = driver.find_element(By.CSS_SELECTOR, 'button[data-id="sign-in-form__submit-btn"]')
-    sign_in_btn.click()
-else:
-    version_2_btn.click()
-    username_field = get_element(by=By.CSS_SELECTOR, selector='input[id="username"]', timeout=3)
-    username_field.send_keys(USERNAME)
-    time.sleep(1)
-
-    password_field = get_element(by=By.ID, selector='password', timeout=3)
-    password_field.send_keys(PASSWORD)
-    time.sleep(1)
-
-    # Submit sign-in credentials
-    sign_in_btn = driver.find_element(By.CSS_SELECTOR, 'button[class="btn__primary--large from__button--floating"]')
-    sign_in_btn.click()
-
-# - - SECURITY CHALLENGE - -
-# Wait for security challenge 
-show_popup(message='Complete security challenge if necessary and press CONTINUE.\n\n(If you are already on the LinkedIn homepage, just press CONTINUE): ')
-time.sleep(3)
-
-# - - LINKEDIN HOMEPAGE FEED - -
-# Enter search query in LinkedIn search
-search_field = driver.find_element(By.CSS_SELECTOR, 'input[placeholder="Search"]')
-search_field.send_keys(INDUSTRY)
-search_field.send_keys(Keys.RETURN)
-time.sleep(5)
-
-
-#- - PEOPLE RESULTS PAGE - - 
-# Select the 'Jobs' search filter 
-try:
-    # Apply people filter 
-    filter_buttons = driver.find_elements(By.CSS_SELECTOR, '.artdeco-pill.artdeco-pill--slate.artdeco-pill--choice.artdeco-pill--2.search-reusables__filter-pill-button')
-    jobs_button = None
-    for button in filter_buttons:
-        if 'Jobs' in button.text:
-            jobs_button = button
-            break
-    if jobs_button:
-        jobs_button.click()
-    else:
-        print('Could not find jobs button')
-        
-except Exception as e:
-    print(f'ERROR: {e}')
-    
-# Select the 'Easy Apply' filter
-xpath_expression = '//button[@aria-label="Easy Apply filter."]'
-actively_hiring_filter = get_element(by=By.XPATH, selector=xpath_expression, timeout=5)
-if actively_hiring_filter:
-    actively_hiring_filter.click()
-    easy_apply_clicked = True
-else:
-    easy_apply_clicked = False
-
-if not easy_apply_clicked:
-    show_popup(message='Manually select the easy apply filter press CONTINUE: ')
-        
-
-# Manually add any additional job search filters.
-show_popup(message='Manually select and apply any additional job search filters in the browser press CONTINUE:')
     
 def scroll_to_element(driver, element):
     actions = ActionChains(driver)
@@ -145,7 +77,7 @@ def expose_jobs(driver):
             job_links = jobs_container.find_elements(By.XPATH, xpath_expression)
 
             print(f'Job Links Discovered: {len(job_links)}\n')
-            if len(job_links) >= 24:
+            if len(job_links) >= 16:
                 # Return job links if reached 24 links.
                 return job_links
             
@@ -192,8 +124,8 @@ def submit_application(driver):
     
 def custom_q_form(driver):
     xpath_expression = '//div[@class="jobs-easy-apply-content"]'
-    easy_apply_window = driver.find_element(By.XPATH, xpath_expression)
-    form_element = driver.find_element(By.TAG_NAME, "form")
+    easy_apply_window = get_element(by=By.XPATH, selector=xpath_expression, timeout=5)
+    form_element = easy_apply_window.find_element(By.TAG_NAME, "form")
     return form_element
 
 def close_application(driver):
@@ -267,17 +199,157 @@ def easy_apply(driver):
         elif check_window(driver=driver, phrase='Additional Questions') and not check_window(driver=driver, phrase='Review your application'):
             try:
                 #print('You are on the additional questions section')
+                
                 form_element = custom_q_form(driver)
 
-                questions = [q.text for q in form_element.find_elements(By.TAG_NAME, "label")]
-                fields = form_element.find_elements(By.TAG_NAME, "input")
+                # Get text input questions
+                text_questions = []
+                text_input_labels = [q_label for q_label in form_element.find_elements(By.TAG_NAME, "label") if q_label.get_attribute("class") == "artdeco-text-input--label"]
+                for label in text_input_labels:
+                    question = label.text
+                    field_id = label.get_attribute("for")
+                    field = form_element.find_element(By.ID, field_id)
+                    if field.get_attribute("value"):
+                        print(f"COMPLETE: '{question}'")
+                        continue
+
+                    if "numeric" in field.get_attribute("id"):
+                        field_type = "text-numeric"
+                    else:
+                        field_type = "text"
+                    
+                    field_data = {
+                        "question": question,
+                        "type": field_type,
+                        "element": field
+                    }
+                    pprint(field_data)
+                    text_questions.append(field_data)
+
+                # Get radio button input sections
+                xpath_expression = '//fieldset[@data-test-form-builder-radio-button-form-component="true"]'
+                radio_btn_sections = form_element.find_elements(By.XPATH, xpath_expression)
+                radio_btn_questions = []
+                for radio_section in radio_btn_sections:
+                    section_completed = False
+                    question = radio_section.find_element(By.XPATH, '//span[@aria-hidden="true"]').text
+
+                    radio_btn_labels = radio_section.find_elements(By.TAG_NAME, "label")
+                    options = []
+                    for option in radio_btn_labels:
+                        btn_id = option.get_attribute("for")
+                        radio_option_btn = radio_section.find_element(By.ID, btn_id)
+                        if radio_option_btn.is_selected():
+                            print(f"QUESTION COMPLETED (skipping): {question}")
+                            section_completed = True
+                            break
+
+                        else:
+                            option_info = {
+                                "label": option.get_attribute("data-test-text-selectable-option__label"),
+                                "element": option#radio_option_btn
+                            }
+                            options.append(option_info)
+                    
+                    if not section_completed:
+                        question_data = {
+                            "question": question,
+                            "type": "radio",
+                            "options": options
+                        }
+                        pprint(question_data)
+                        radio_btn_questions.append(question_data)
+
+                # Get dropdow menu input sections
+                drop_down_questions = []
+                drop_down_menus = form_element.find_elements(By.TAG_NAME, 'select')
+                for drop_down in drop_down_menus:
+                    drop_down_id = drop_down.get_attribute("id")
+                    question = form_element.find_element(By.XPATH, f'//label[@for="{drop_down_id}"]').text
+                    print(question)
+
+                    section_complete = False
+                    options = drop_down.find_elements(By.TAG_NAME, "option")
+                    options_data = []
+                    for option in options:
+                        print(option.text)
+                        if option.is_selected() and option.get_attribute("value") != "Select an option":
+                            section_complete = True
+                            break
+
+                        value = option.get_attribute("value")
+                        if value != "Select an option":
+                            option_details = {
+                                "label": value,
+                                "element": option,
+                            }
+                            options_data.append(option_details)
+
+                    if not section_complete:
+                        question_data = {
+                            "question": question,
+                            "element": drop_down,
+                            "type": "dropdown",
+                            "options": options_data
+                        }
+                        drop_down_questions.append(question_data)
+
+                
+                unanswered_questions = drop_down_questions + radio_btn_questions + text_questions
+                pprint(unanswered_questions)
+
+                with open('./resume.txt', "r") as file:
+                    resume = file.read()
+
+                for question in unanswered_questions:
+                    scroll_to_element(driver, question['element'])
+                    prompt = f"I need help filling out a job application. Based on my resume (below) please help me answer this question on the application (only return the answer):"
+                    prompt = f"{prompt}\nQUESTION: '{question['question']}\n'"
+                    prompt = f"{prompt}Additional Instructions: if you're not sure about an answer, give your best guess.\n"
+
+                    if question['type'] == "text":
+                        prompt = f"{prompt}RESUME:\n{resume}"
+                        response = chatgpt(prompt)
+                        print(f"ANWSER: {response}")
+                        question['element'].send_keys(response)
+                        
+
+                    elif question['type'] == "text-numeric":
+                        prompt = f"{prompt}\n Also, only return the answer as a number."
+                        prompt = f"{prompt}RESUME:\n{resume}"
+                        response = chatgpt(prompt)
+                        print(f"ANWSER: {response}")
+                        question['element'].send_keys(response)
+                    elif question['type'] == "radio":
+                        prompt = f"{prompt}\nJust return the integer number for the option that is the best answer and nothing else.\n"
+                        for i,option in enumerate(question['options']):
+                            prompt = f"{prompt}OPTION {i}: {option['label']}\n"
+                        
+                        prompt = prompt + '\n'
+                        prompt = f"{prompt}RESUME:\n{resume}"
+                        response = chatgpt(prompt)
+                        print(f"ANWSER: {response}")
+                        question['options'][int(response)]['element'].click()
+                    elif question['type'] == "dropdown":
+                        question['element'].click()
+                        prompt = f"{prompt}\nJust return the integer number for the option that is the best answer and nothing else.\n"
+                        for i,option in enumerate(question['options']):
+                            prompt = f"{prompt}OPTION {i}: {option['label']}\n"
+                        prompt = prompt + '\n'
+                        prompt = f"{prompt}RESUME:\n{resume}"
+                        response = chatgpt(prompt)
+                        print(f"ANWSER: {response}")
+                        time.sleep(1)
+                        question['options'][int(response)]['element'].click()
+                    time.sleep(1)
                 
                 # Review the application
                 click_next(driver)
                 time.sleep(2)
                 if check_window(driver=driver, phrase='Additional Questions') and not check_window(driver=driver, phrase='Review your application'):
                     raise Exception
-            except:
+            except Exception as e:
+                print(traceback.format_exc())
                 try:
                     click_review(driver)
                     time.sleep(2)
@@ -331,8 +403,87 @@ def get_nav_pages(driver):
     pages = pagination_container.find_elements(By.CSS_SELECTOR, "li[data-test-pagination-page-btn]")
     return pages
 
-pages = get_nav_pages(driver)
+
+
+# - - - - - - -  M A I N   E X E C U T I O N   S T A R T - - - - - - - - - 
+# - - LOG IN PAGE - -
+# Enter username
+version_2_btn = check_sign_in_page()
+if not version_2_btn:
+    print(f"Sign in version 1")
+    username_field = get_element(by=By.CSS_SELECTOR, selector='input[autocomplete="username"]', timeout=3)
+    username_field.send_keys(USERNAME)
+    time.sleep(1)
+
+    password_field = get_element(by=By.ID, selector='session_password', timeout=3)
+    password_field.send_keys(PASSWORD)
+    time.sleep(1)
+
+    # Submit sign-in credentials
+    sign_in_btn = driver.find_element(By.CSS_SELECTOR, 'button[data-id="sign-in-form__submit-btn"]')
+    sign_in_btn.click()
+else:
+    print(f"Sign in version 2")
+    version_2_btn.click()
+    username_field = get_element(by=By.CSS_SELECTOR, selector='input[id="username"]', timeout=3)
+    username_field.send_keys(USERNAME)
+    time.sleep(1)
+
+    password_field = get_element(by=By.ID, selector='password', timeout=3)
+    password_field.send_keys(PASSWORD)
+    time.sleep(1)
+
+    # Submit sign-in credentials
+    sign_in_btn = driver.find_element(By.CSS_SELECTOR, 'button[class="btn__primary--large from__button--floating"]')
+    sign_in_btn.click()
+
+# - - SECURITY CHALLENGE - -
+# Wait for security challenge 
+show_popup(message='Complete security challenge if necessary and press CONTINUE.\n\n(If you are already on the LinkedIn homepage, just press CONTINUE): ')
+time.sleep(3)
+
+# - - LINKEDIN HOMEPAGE FEED - -
+# Enter search query in LinkedIn search
+search_field = driver.find_element(By.CSS_SELECTOR, 'input[placeholder="Search"]')
+search_field.send_keys(INDUSTRY)
+search_field.send_keys(Keys.RETURN)
+time.sleep(5)
+
+
+#- - PEOPLE RESULTS PAGE - - 
+# Select the 'Jobs' search filter 
+try:
+    # Apply people filter 
+    filter_buttons = driver.find_elements(By.CSS_SELECTOR, '.artdeco-pill.artdeco-pill--slate.artdeco-pill--choice.artdeco-pill--2.search-reusables__filter-pill-button')
+    jobs_button = None
+    for button in filter_buttons:
+        if 'Jobs' in button.text:
+            jobs_button = button
+            break
+    if jobs_button:
+        jobs_button.click()
+    else:
+        print('Could not find jobs button')
+        
+except Exception as e:
+    print(f'ERROR: {e}')
     
+# Select the 'Easy Apply' filter
+xpath_expression = '//button[@aria-label="Easy Apply filter."]'
+actively_hiring_filter = get_element(by=By.XPATH, selector=xpath_expression, timeout=5)
+if actively_hiring_filter:
+    actively_hiring_filter.click()
+    easy_apply_clicked = True
+else:
+    easy_apply_clicked = False
+
+if not easy_apply_clicked:
+    show_popup(message='Manually select the easy apply filter press CONTINUE: ')
+        
+# Manually add any additional job search filters.
+show_popup(message='Manually select and apply any additional job search filters in the browser press CONTINUE:')
+
+pages = get_nav_pages(driver)
 try:
     num_pages = len(pages)
     for i in range(num_pages):
@@ -355,14 +506,6 @@ try:
                 continue
             easy_apply_button.click()
             time.sleep(4)
-
-            # try:
-            #     xpath_expression = '//button[@class="jobs-apply-button artdeco-button artdeco-button--3 artdeco-button--primary ember-view"]'
-            #     easy_apply_button = driver.find_element(By.XPATH, xpath_expression)
-            #     easy_apply_button.click()
-            #     time.sleep(4)
-            # except:
-            #     continue
 
             easy_apply(driver)
 
