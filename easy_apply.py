@@ -256,7 +256,8 @@ def easy_apply(driver):
                         question_data = {
                             "question": question,
                             "type": "radio",
-                            "options": options
+                            "options": options,
+                            "element": options[0]['element']
                         }
                         pprint(question_data)
                         radio_btn_questions.append(question_data)
