@@ -90,10 +90,12 @@ else:
     sign_in_btn = driver.find_element(By.CSS_SELECTOR, 'button[class="btn__primary--large from__button--floating"]')
     sign_in_btn.click()
 
-# Wait for security challenge 
-show_popup(message='Manually complete security challenge in browser if necessary and click CONTINUE.\n\n(If you are already on the LinkedIn homepage, just click CONTINUE): ')
-time.sleep(1)
-
+# Enter search query in LinkedIn search
+search_field = get_element(by=By.CSS_SELECTOR, selector='input[placeholder="Search"]', timeout=5)
+if not search_field:
+    show_popup(message='Complete security challenge if necessary and press CONTINUE.\n\n(If you are already on the LinkedIn homepage, just press CONTINUE): ')
+    search_field = get_element(by=By.CSS_SELECTOR, selector='input[placeholder="Search"]', timeout=5)
+    
 # - - LINKEDIN HOMEPAGE FEED - -
 # Enter search query in LinkedIn search
 search_field = driver.find_element(By.CSS_SELECTOR, 'input[placeholder="Search"]')
