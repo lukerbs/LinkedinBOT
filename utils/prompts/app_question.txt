@@ -1,0 +1,15 @@
+# INSTRUCTIONS
+I need help filling out a job application. Based on my resume (below) please help me answer this questions on the application.
+- Return the answers as a json string in the following format: {0: "question index 0 answer", 1: "question index 1 answer", etc...}
+- For "select one" questions, you should return the option index of the answer, not the literal answer.
+- If you are not sure about a question, just give your best guess.
+- For numeric question responses, make sure to return the answer value as a number in the json.
+
+# APPLICATION QUESTIONS:
+APPLICATION_QUESTIONS
+
+# RESUME:
+MY_RESUME
+
+# JOB DESCRIPTION:
+JOB_DESCRIPTION
