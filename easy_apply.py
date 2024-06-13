@@ -9,13 +9,21 @@ import traceback
 from pprint import pprint
 import time
 import atexit
+from dotenv import load_dotenv
 import os
-
 import openai
 
-CHATGPT = ""
-client = openai.OpenAI(api_key=CHATGPT)
+from utils.prompting import question_prompt, extract_json
+
+
+# Load .env file
+load_dotenv()
+# Access the variables
+OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+
+client = openai.OpenAI(api_key=OPENAI_API_KEY)
 def chatgpt(query:str, model='gpt-4-turbo-preview', max_tokens=None):
+    print(f"Queryig ChatGPT...")
     # select model from ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo-preview', 'gpt-4-32k', 'gpt-4-1106-preview']
     completion = client.chat.completions.create(
         model=model,
@@ -41,8 +49,7 @@ USERNAME = config['Email']
 PASSWORD = config['Password']
 
 
-INDUSTRY = show_input_popup(title="Job Search Query", message="Enter and submit your job search query.\nE.g.: 'data scientist', 'sales executive, etc.")
-print('')
+
 
 def wait():
     input('Press enter to continue: ')
@@ -78,7 +85,7 @@ def expose_jobs(driver):
             job_links = jobs_container.find_elements(By.XPATH, xpath_expression)
 
             print(f'Job Links Discovered: {len(job_links)}\n')
-            if len(job_links) >= 16:
+            if len(job_links) >= 24:
                 # Return job links if reached 24 links.
                 return job_links
             
@@ -86,7 +93,7 @@ def expose_jobs(driver):
             for job in job_links:
                 # Scroll to each link in list down to the bottom of the list.
                 driver.execute_script("arguments[0].scrollIntoView();", job)
-                time.sleep(.5)
+                time.sleep(.05)
             
             # Scroll to top of list.
             driver.execute_script("arguments[0].scrollIntoView();", job_links[0])
@@ -107,7 +114,7 @@ def check_window(driver, phrase):
     
 def click_next(driver):
     xpath_expression = '//button[@aria-label="Continue to next step"]'
-    next_button = driver.find_element(By.XPATH, xpath_expression)
+    next_button = get_element(by=By.XPATH, selector=xpath_expression, timeout=3)
     scroll_to_element(driver, next_button)
     next_button.click()
     
@@ -118,20 +125,27 @@ def click_review(driver):
     
 def submit_application(driver):
     xpath_expression = '//button[@aria-label="Submit application"]'
-    submit_button = driver.find_element(By.XPATH, xpath_expression)
+    submit_button = get_element(by=By.XPATH, selector=xpath_expression, timeout=3)
     scroll_to_element(driver, submit_button)
-    time.sleep(2)
     submit_button.click()
-    
-def custom_q_form(driver):
-    xpath_expression = '//div[@class="jobs-easy-apply-content"]'
-    easy_apply_window = get_element(by=By.XPATH, selector=xpath_expression, timeout=5)
-    form_element = easy_apply_window.find_element(By.TAG_NAME, "form")
-    return form_element
+    print('\nALERT: Your application has successfully been submitted!')
+    success_chime()
+    time.sleep(2)
+    close_application(driver)
+    time.sleep(2)
+
+def custom_q_form():
+    try:
+        xpath_expression = '//div[@class="jobs-easy-apply-content"]'
+        easy_apply_window = get_element(by=By.XPATH, selector=xpath_expression, timeout=3)
+        form_element = easy_apply_window.find_element(By.TAG_NAME, "form")
+        return form_element
+    except:
+        return False
 
 def close_application(driver):
     xpath_expression = '//button[@aria-label="Dismiss"]'
-    close_button = driver.find_element(By.XPATH, xpath_expression)
+    close_button = get_element(by=By.XPATH, selector=xpath_expression, timeout=6)
     close_button.click()
     
 def discard_application(driver):
@@ -158,50 +172,50 @@ def application_error_close(driver):
 def get_answer(question):
     return
 
-def easy_apply(driver):
+def easy_apply(driver, job_description):
+    failures = 0
     while True:
         if check_window(driver=driver, phrase='Contact info') and not check_window(driver=driver, phrase='Review your application'):
             try:
                 submit_application(driver)
-                time.sleep(2)
-                close_application(driver)
                 return
             except:
-                pass
-            #print('You are in the contact section')
-            click_next(driver)
-            time.sleep(4)
-            continue
-        elif check_window(driver=driver, phrase='Voluntary self identification') and not check_window(driver=driver, phrase='Review your application'):
+                click_next(driver)
+        if check_window(driver=driver, phrase='Voluntary self identification') and not check_window(driver=driver, phrase='Review your application'):
             #print('You are in the Self Identification section')
             click_next(driver)
-            time.sleep(3)
-            continue
-        elif check_window(driver=driver, phrase='Be sure to include an updated resume') and not check_window(driver=driver, phrase='Review your application'):
+
+        if check_window(driver=driver, phrase='Be sure to include an updated resume') and not check_window(driver=driver, phrase='Review your application'):
             #print('You are on the resume section')
             try:
                 click_next(driver)
-                time.sleep(3)
+                time.sleep(1)
                 continue
             except:
-                click_review(driver)
-                time.sleep(3)
-                continue
-        elif check_window(driver=driver, phrase='Work authorization') and not check_window(driver=driver, phrase='Review your application'):
+                pass
+        if check_window(driver=driver, phrase='Work authorization') and not check_window(driver=driver, phrase='Review your application'):
             #print('You are on the work authorization section')
             try:
                 click_next(driver)
-                time.sleep(3)
-                continue
+                time.sleep(1)
+                break
             except:
-                click_review(driver)
-                time.sleep(3)
-                continue
-        elif check_window(driver=driver, phrase='Additional Questions') and not check_window(driver=driver, phrase='Review your application'):
+                pass
+        form_element = custom_q_form()
+        if form_element and not check_window(driver=driver, phrase='Review your application'):
+            print(f"\n-- FORM SECTION APPLICATION - -\n")
             try:
-                #print('You are on the additional questions section')
-                
-                form_element = custom_q_form(driver)
+                if not "additional" in form_element.text or "cover letter" not in form_element.text.lower():
+                    try:
+                        click_next(driver)
+                    except:
+                        pass
+                    time.sleep(1)
+
+                form_element = custom_q_form()
+                if not form_element:
+                    print(f"ALERT: Form element was bypassed.")
+                    continue
 
                 # Get text input questions
                 text_questions = []
@@ -210,7 +224,7 @@ def easy_apply(driver):
                     question = label.text
                     field_id = label.get_attribute("for")
                     field = form_element.find_element(By.ID, field_id)
-                    if field.get_attribute("value"):
+                    if field.get_attribute("value"):# or field.get_attribute('required') is None:
                         print(f"COMPLETE: '{question}'")
                         continue
 
@@ -259,7 +273,6 @@ def easy_apply(driver):
                             "options": options,
                             "element": options[0]['element']
                         }
-                        pprint(question_data)
                         radio_btn_questions.append(question_data)
 
                 # Get dropdow menu input sections
@@ -298,109 +311,73 @@ def easy_apply(driver):
 
                 
                 unanswered_questions = drop_down_questions + radio_btn_questions + text_questions
+                if not unanswered_questions:
+                    # Continue to next section
+                    click_next(driver)
+                    time.sleep(2)
+                    break
+                print(f"\n- - UNANSWERED QUESTIONS - -")
                 pprint(unanswered_questions)
+                print(f"\- - - - - - - -")
 
                 with open('./resume.txt', "r") as file:
                     resume = file.read()
 
-                for question in unanswered_questions:
+                prompt = question_prompt(questions=unanswered_questions, resume=resume, job_description=job_description)
+                response = chatgpt(prompt)
+                answers = extract_json(response)
+                pprint(answers)
+                for i,question in enumerate(unanswered_questions):
+                    selected_answer = answers[str(i)]
                     scroll_to_element(driver, question['element'])
-                    prompt = f"I need help filling out a job application. Based on my resume (below) please help me answer this question on the application (only return the answer):"
-                    prompt = f"{prompt}\nQUESTION: '{question['question']}\n'"
-                    prompt = f"{prompt}Additional Instructions: if you're not sure about an answer, give your best guess.\n"
-
                     if question['type'] == "text":
-                        prompt = f"{prompt}RESUME:\n{resume}"
-                        response = chatgpt(prompt)
-                        print(f"ANWSER: {response}")
-                        question['element'].send_keys(response)
-                        
-
+                        question['element'].send_keys(selected_answer)
                     elif question['type'] == "text-numeric":
-                        prompt = f"{prompt}\n Also, only return the answer as a number."
-                        prompt = f"{prompt}RESUME:\n{resume}"
-                        response = chatgpt(prompt)
-                        print(f"ANWSER: {response}")
-                        question['element'].send_keys(response)
-                    elif question['type'] == "radio":
-                        prompt = f"{prompt}\nJust return the integer number for the option that is the best answer and nothing else.\n"
-                        for i,option in enumerate(question['options']):
-                            prompt = f"{prompt}OPTION {i}: {option['label']}\n"
-                        
-                        prompt = prompt + '\n'
-                        prompt = f"{prompt}RESUME:\n{resume}"
-                        response = chatgpt(prompt)
-                        print(f"ANWSER: {response}")
-                        question['options'][int(response)]['element'].click()
-                    elif question['type'] == "dropdown":
-                        question['element'].click()
-                        prompt = f"{prompt}\nJust return the integer number for the option that is the best answer and nothing else.\n"
-                        for i,option in enumerate(question['options']):
-                            prompt = f"{prompt}OPTION {i}: {option['label']}\n"
-                        prompt = prompt + '\n'
-                        prompt = f"{prompt}RESUME:\n{resume}"
-                        response = chatgpt(prompt)
-                        print(f"ANWSER: {response}")
-                        time.sleep(1)
-                        question['options'][int(response)]['element'].click()
+                        question['element'].send_keys(selected_answer)
+                    elif question['type'] in ["radio", "dropdown"]:
+                        question['options'][selected_answer]['element'].click()
                     time.sleep(1)
                 
                 # Review the application
                 click_next(driver)
                 time.sleep(2)
-                if check_window(driver=driver, phrase='Additional Questions') and not check_window(driver=driver, phrase='Review your application'):
-                    raise Exception
             except Exception as e:
                 print(traceback.format_exc())
-                try:
-                    click_review(driver)
-                    time.sleep(2)
-                    if check_window(driver=driver, phrase='Review your application'):
-                        continue
-                except:
-                    pass
-                show_popup(message='Manually complete section and press CONTINUE:')
-                time.sleep(1)
-                try:
-                    click_next(driver)
-                    time.sleep(3)
-                    continue
-                except:
-                    click_review(driver)
-                    time.sleep(3)
+                pass
 
-        elif check_window(driver=driver, phrase='Review your application'):
+        if check_window(driver=driver, phrase='Review your application'):
             time.sleep(1)
             #print('You are on the application review section')
             submit_application(driver)
-            print('\nALERT: Your application has successfully been submitted!')
-            success_chime()
-            time.sleep(2)
-            close_application(driver)
             return
-
+        
         else:
-            try:
-                time.sleep(1)
-                click_next(driver)
-                time.sleep(2)
-            except:
-                try:
-                    click_review(driver)
-                    time.sleep(2)
-                except:
-                    pass
-            show_popup(message='Application section not recognized.\nComplete application section and press CONTINUE:')
+            # Fail safe, last resort
             try:
                 click_next(driver)
                 time.sleep(2)
+                continue
             except:
                 pass
+
+            try:
+                click_review(driver)
+                time.sleep(2)
+                continue
+            except:
+                pass
+            
+            failures += 1
+            if failures >= 10:
+                print(f"\n- - STUCK IN A LOOP - - ")
+                print(f"Discarding application.")
+                application_error_close(driver)
+            #show_popup(message='Application section not recognized.\nComplete application section and press CONTINUE:')
         
 # Pagination
 def get_nav_pages(driver):
     xpath_expression = '//ul[@class="artdeco-pagination__pages artdeco-pagination__pages--number"]'
-    pagination_container = driver.find_element(By.XPATH, xpath_expression)
+    pagination_container = get_element(by=By.XPATH, selector=xpath_expression, timeout=5)
     scroll_to_element(driver, pagination_container)
     pages = pagination_container.find_elements(By.CSS_SELECTOR, "li[data-test-pagination-page-btn]")
     return pages
@@ -408,6 +385,9 @@ def get_nav_pages(driver):
 
 
 # - - - - - - -  M A I N   E X E C U T I O N   S T A R T - - - - - - - - - 
+INDUSTRY = show_input_popup(title="Job Search Query", message="Enter and submit your job search query.\nE.g.: 'data scientist', 'sales executive, etc.")
+print('')
+
 # - - LOG IN PAGE - -
 # Enter username
 version_2_btn = check_sign_in_page()
@@ -441,51 +421,43 @@ else:
 
 # - - SECURITY CHALLENGE - -
 # Wait for security challenge 
-show_popup(message='Complete security challenge if necessary and press CONTINUE.\n\n(If you are already on the LinkedIn homepage, just press CONTINUE): ')
-time.sleep(3)
 
 # - - LINKEDIN HOMEPAGE FEED - -
 # Enter search query in LinkedIn search
-search_field = driver.find_element(By.CSS_SELECTOR, 'input[placeholder="Search"]')
+search_field = get_element(by=By.CSS_SELECTOR, selector='input[placeholder="Search"]', timeout=5)
+if not search_field:
+    show_popup(message='Complete security challenge if necessary and press CONTINUE.\n\n(If you are already on the LinkedIn homepage, just press CONTINUE): ')
+    search_field = get_element(by=By.CSS_SELECTOR, selector='input[placeholder="Search"]', timeout=5)
+
 search_field.send_keys(INDUSTRY)
 search_field.send_keys(Keys.RETURN)
 time.sleep(5)
 
 
 #- - PEOPLE RESULTS PAGE - - 
+# Wait for page to load
+xpath_expression = '.artdeco-pill.artdeco-pill--slate.artdeco-pill--choice.artdeco-pill--2.search-reusables__filter-pill-button'
+get_element(by=By.CSS_SELECTOR, selector=xpath_expression, timeout=10) 
 # Select the 'Jobs' search filter 
-try:
-    # Apply people filter 
-    filter_buttons = driver.find_elements(By.CSS_SELECTOR, '.artdeco-pill.artdeco-pill--slate.artdeco-pill--choice.artdeco-pill--2.search-reusables__filter-pill-button')
-    jobs_button = None
-    for button in filter_buttons:
-        if 'Jobs' in button.text:
-            jobs_button = button
-            break
-    if jobs_button:
-        jobs_button.click()
-    else:
-        print('Could not find jobs button')
-        
-except Exception as e:
-    print(f'ERROR: {e}')
+filter_buttons = driver.find_elements(By.CSS_SELECTOR, xpath_expression)
+for button in filter_buttons:
+    if 'Jobs' in button.text:
+        button.click()
+        break
     
 # Select the 'Easy Apply' filter
 xpath_expression = '//button[@aria-label="Easy Apply filter."]'
-actively_hiring_filter = get_element(by=By.XPATH, selector=xpath_expression, timeout=5)
-if actively_hiring_filter:
-    actively_hiring_filter.click()
-    easy_apply_clicked = True
+easy_apply_filter = get_element(by=By.XPATH, selector=xpath_expression, timeout=5)
+if easy_apply_filter:
+    easy_apply_filter.click()
 else:
-    easy_apply_clicked = False
-
-if not easy_apply_clicked:
     show_popup(message='Manually select the easy apply filter press CONTINUE: ')
         
 # Manually add any additional job search filters.
 show_popup(message='Manually select and apply any additional job search filters in the browser press CONTINUE:')
 
 pages = get_nav_pages(driver)
+time.sleep(2)
 try:
     num_pages = len(pages)
     for i in range(num_pages):
@@ -498,18 +470,19 @@ try:
 
             xpath_expression = '//div[@id="job-details"]'
             job_description = driver.find_element(By.XPATH, xpath_expression)
+            job_description = job_description.text
             #print(job_description.text[:20])
             #time.sleep(2.3)
 
             # Click Job Application
             xpath_expression = '//button[@class="jobs-apply-button artdeco-button artdeco-button--3 artdeco-button--primary ember-view"]'
-            easy_apply_button = get_element(by=By.XPATH, selector=xpath_expression, timeout=3)
+            easy_apply_button = get_element(by=By.XPATH, selector=xpath_expression, timeout=.5)
             if not easy_apply_button:
                 continue
             easy_apply_button.click()
-            time.sleep(4)
+            time.sleep(1)
 
-            easy_apply(driver)
+            easy_apply(driver, job_description)
 
         # Go to next page of job search results
         scroll_to_element(driver, pages[i+1])
