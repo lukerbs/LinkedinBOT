@@ -19,119 +19,6 @@ from __init__ import main_window, driver
 from util import success_chime, show_popup, show_input_popup, load_config
 
 
-print('\n - - - LINKEDINBOT - - - \n')
-
-config = load_config()
-USERNAME = config['Email']
-PASSWORD = config['Password']
-
-def get_element(by, selector, timeout):
-    wait = WebDriverWait(driver, timeout)
-    try:
-        element = wait.until(EC.presence_of_element_located((by, selector)))
-        return element
-    except TimeoutException:
-        print(f'TimeoutException: Could not find element within {timeout} seconds.\n')
-        return None
-
-def check_sign_in_page():
-    xpath_expression = '//a[@data-test-id="home-hero-sign-in-cta"]'
-    sign_in_btn = get_element(by=By.XPATH, selector=xpath_expression, timeout=3)
-    return sign_in_btn
-
-
-
-print('- - ENTER PEOPLE SEARCH QUERY - -')
-INDUSTRY = show_input_popup(title="JOB QUERY", message="Enter and submit your recruiter search query.\n E.g.: data science recruiter, google recruiter etc.", password=False)
-
-
-def load_introduction(name, path='./introduction.txt'):
-    with open(path, 'r') as file:
-        file_content = file.read()
-    intro = file_content.replace('FIRST_NAME', name)
-    if len(intro) > 300:
-        print(f'ERROR:\nYour introduction is too long ({len(intro)} chars).\nShorten your intro to no more than 300 characters and restart the bot.')
-        exit()
-        
-    return intro
-
-# Optional: You can add additional actions here, such as interacting with elements on the page
-time.sleep(3)
-
-# - - - - - - -  M A I N   E X E C U T I O N   S T A R T - - - - - - - - - 
-# - - LOG IN PAGE - -
-# Enter username
-version_2_btn = check_sign_in_page()
-if not version_2_btn:
-    print(f"Sign in version 1")
-    username_field = get_element(by=By.CSS_SELECTOR, selector='input[autocomplete="username"]', timeout=3)
-    username_field.send_keys(USERNAME)
-    time.sleep(1)
-
-    password_field = get_element(by=By.ID, selector='session_password', timeout=3)
-    password_field.send_keys(PASSWORD)
-    time.sleep(1)
-
-    # Submit sign-in credentials
-    sign_in_btn = driver.find_element(By.CSS_SELECTOR, 'button[data-id="sign-in-form__submit-btn"]')
-    sign_in_btn.click()
-else:
-    print(f"Sign in version 2")
-    version_2_btn.click()
-    username_field = get_element(by=By.CSS_SELECTOR, selector='input[id="username"]', timeout=3)
-    username_field.send_keys(USERNAME)
-    time.sleep(1)
-
-    password_field = get_element(by=By.ID, selector='password', timeout=3)
-    password_field.send_keys(PASSWORD)
-    time.sleep(1)
-
-    # Submit sign-in credentials
-    sign_in_btn = driver.find_element(By.CSS_SELECTOR, 'button[class="btn__primary--large from__button--floating"]')
-    sign_in_btn.click()
-
-# Enter search query in LinkedIn search
-search_field = get_element(by=By.CSS_SELECTOR, selector='input[placeholder="Search"]', timeout=5)
-if not search_field:
-    show_popup(message='Complete security challenge if necessary and press CONTINUE.\n\n(If you are already on the LinkedIn homepage, just press CONTINUE): ')
-    search_field = get_element(by=By.CSS_SELECTOR, selector='input[placeholder="Search"]', timeout=5)
-    
-# - - LINKEDIN HOMEPAGE FEED - -
-# Enter search query in LinkedIn search
-search_field = driver.find_element(By.CSS_SELECTOR, 'input[placeholder="Search"]')
-search_field.send_keys(INDUSTRY)
-search_field.send_keys(Keys.RETURN)
-time.sleep(5)
-
-
-# - - PEOPLE RESULTS PAGE - - 
-# Select the 'People' search filter 
-for i in range(5):
-    try:
-        # Apply people filter 
-        people_filter = driver.find_element(By.CSS_SELECTOR, '.artdeco-pill.artdeco-pill--slate.artdeco-pill--choice.artdeco-pill--2.search-reusables__filter-pill-button')
-        people_filter.click()
-        time.sleep(6)
-        break
-    except:
-        time.sleep(2)
-        pass
-
-# Select the 'Actively Hiring' search filter if user is a LinkedIn Premium member
-try:
-    xpath_expression = '//button[@aria-label="Actively hiring filter."]'
-    actively_hiring_filter = driver.find_element(By.XPATH, xpath_expression)
-    actively_hiring_filter.click()
-    time.sleep(3)
-except:
-    print('ALERT: Could not click Actively Hiring Filter')
-    pass
-
-
-    
-results_window = driver.current_window_handle
-print("ALERT: Job search commencing!")
-    
 # - - - NEW CONNECTION FUNCTIONS - - - 
 
 
@@ -158,20 +45,22 @@ def click_connect(driver):
 def add_a_note(driver):
     # Add a note
     print('CLICKING ADD A NOTE')
-    add_a_note_button = driver.find_element(By.XPATH, '//button[@aria-label="Add a note"]')
+    xpath_expression = '//button[@aria-label="Add a note"]'
+    add_a_note_button = get_element(by=By.XPATH, selector=xpath_expression, timeout=10)
     add_a_note_button.click()
-    time.sleep(3)
     
     
 def compose_new_connection(driver, name):
     print('COMPOSING MESSAGE')
-    text_area = driver.find_element(By.XPATH, '//textarea[@name="message"]')
+    xpath_expression = '//textarea[@name="message"]'
+    text_area = get_element(by=By.XPATH, selector=xpath_expression, timeout=6)
     introduction = load_introduction(name=name)
     text_area.send_keys(introduction)
-    time.sleep(3)
+    time.sleep(.5)
     
     print('CLICKING SEND')
-    send_button = driver.find_element(By.XPATH, '//button[@aria-label="Send now"]')
+    xpath_expression = '//button[@aria-label="Send invitation"]'
+    send_button = get_element(by=By.XPATH, selector=xpath_expression, timeout=6)
     send_button.click()
 
     
@@ -250,9 +139,8 @@ def scroll_to_bottom(driver):
     driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
     
 def click_next(driver):
-    scroll_to_bottom(driver)
-    time.sleep(3)
     next_page_button = driver.find_element(By.XPATH, '//button[@aria-label="Next"]')
+    scroll_to_element(driver, next_page_button)
     next_page_button.click()
     
 def get_profile_links(driver):
@@ -293,6 +181,15 @@ def open_profile(profile_link):
     driver.switch_to.window(new_tab_handle)
     time.sleep(5)
     
+def load_introduction(name, path='./introduction.txt'):
+    with open(path, 'r') as file:
+        file_content = file.read()
+    intro = file_content.replace('FIRST_NAME', name)
+    if len(intro) > 300:
+        print(f'ERROR:\nYour introduction is too long ({len(intro)} chars).\nShorten your intro to no more than 300 characters and restart the bot.')
+        exit()
+        
+    return intro
     
 def introduce(driver, profile_link):
     close_all_chats(driver)
@@ -316,18 +213,127 @@ def introduce(driver, profile_link):
         #     compose_message(driver, first_name)
     close_all_chats(driver)
 
-while True:
-    connect_buttons = driver.find_elements(By.XPATH, '//button[contains(@aria-label, "Invite")]')
-    for button in connect_buttons:
-        scroll_to_element(driver, button)
-        name = button.get_attribute("aria-label").split(' ')[1]
-        time.sleep(3)
+
+
+
+def get_element(by, selector, timeout):
+    wait = WebDriverWait(driver, timeout)
+    try:
+        element = wait.until(EC.presence_of_element_located((by, selector)))
+        return element
+    except TimeoutException:
+        print(f'TimeoutException: Could not find element within {timeout} seconds.\n')
+        return None
+
+def check_sign_in_page():
+    xpath_expression = '//a[@data-test-id="home-hero-sign-in-cta"]'
+    sign_in_btn = get_element(by=By.XPATH, selector=xpath_expression, timeout=3)
+    return sign_in_btn
+
+
+
+
+# - - - - - - -  M A I N   E X E C U T I O N   S T A R T - - - - - - - - - 
+print('\n - - - LINKEDINBOT - - - \n')
+
+config = load_config()
+USERNAME = config['Email']
+PASSWORD = config['Password']
+
+print('- - ENTER PEOPLE SEARCH QUERY - -')
+INDUSTRY = show_input_popup(title="JOB QUERY", message="Enter and submit your recruiter search query.\n E.g.: data science recruiter, google recruiter etc.", password=False)
+INDUSTRY = INDUSTRY.strip()
+# Optional: You can add additional actions here, such as interacting with elements on the page
+time.sleep(3)
+# - - LOG IN PAGE - -
+
+
+# Enter username
+version_2_btn = check_sign_in_page()
+if not version_2_btn:
+    print(f"Sign in version 1")
+    username_field = get_element(by=By.CSS_SELECTOR, selector='input[autocomplete="username"]', timeout=3)
+    username_field.send_keys(USERNAME)
+    time.sleep(1)
+
+    password_field = get_element(by=By.ID, selector='session_password', timeout=3)
+    password_field.send_keys(PASSWORD)
+    time.sleep(1)
+
+    # Submit sign-in credentials
+    sign_in_btn = driver.find_element(By.CSS_SELECTOR, 'button[data-id="sign-in-form__submit-btn"]')
+    sign_in_btn.click()
+else:
+    print(f"Sign in version 2")
+    version_2_btn.click()
+    username_field = get_element(by=By.CSS_SELECTOR, selector='input[id="username"]', timeout=3)
+    username_field.send_keys(USERNAME)
+    time.sleep(1)
+
+    password_field = get_element(by=By.ID, selector='password', timeout=3)
+    password_field.send_keys(PASSWORD)
+    time.sleep(1)
+
+    # Submit sign-in credentials
+    sign_in_btn = driver.find_element(By.CSS_SELECTOR, 'button[class="btn__primary--large from__button--floating"]')
+    sign_in_btn.click()
+
+# Enter search query in LinkedIn search
+search_field = get_element(by=By.CSS_SELECTOR, selector='input[placeholder="Search"]', timeout=5)
+if not search_field:
+    show_popup(message='Complete security challenge if necessary and press CONTINUE.\n\n(If you are already on the LinkedIn homepage, just press CONTINUE): ')
+    search_field = get_element(by=By.CSS_SELECTOR, selector='input[placeholder="Search"]', timeout=5)
+    
+# - - LINKEDIN HOMEPAGE FEED - -
+# Enter search query in LinkedIn search
+search_field = driver.find_element(By.CSS_SELECTOR, 'input[placeholder="Search"]')
+search_field.send_keys(INDUSTRY)
+search_field.send_keys(Keys.RETURN)
+time.sleep(5)
+
+
+# - - PEOPLE RESULTS PAGE - - 
+# Select the 'People' search filter
+# Wait for page to load
+xpath_expression = '.artdeco-pill.artdeco-pill--slate.artdeco-pill--choice.artdeco-pill--2.search-reusables__filter-pill-button'
+get_element(by=By.CSS_SELECTOR, selector=xpath_expression, timeout=10) 
+# Select the 'Jobs' search filter 
+filter_buttons = driver.find_elements(By.CSS_SELECTOR, xpath_expression)
+for button in filter_buttons:
+    if 'People' in button.text:
         button.click()
-        time.sleep(3)
-        print('')
-        add_a_note(driver)
-        time.sleep(3)
-        compose_new_connection(driver, name)
-        time.sleep(3)
-    click_next(driver)
-    time.sleep(5)
+        break
+
+# Select the 'Actively Hiring' search filter if user is a LinkedIn Premium member
+xpath_expression = '//button[@id="searchFilter_activelyHiringForJobTitles"]'
+actively_hiring_filter = get_element(by=By.XPATH, selector=xpath_expression, timeout=5)
+if actively_hiring_filter:
+    actively_hiring_filter.click()
+else:
+    print('ALERT: Could not click Actively Hiring Filter')
+
+# Start messaging people
+try:
+    query = INDUSTRY.replace(" ", '%20')
+    page = 0
+    while True:
+        page += 1
+        sid = driver.current_url.split('=')[-1]
+        url = f"https://www.linkedin.com/search/results/people/?activelyHiringForJobTitles=%5B%22-100%22%5D&keywords={query}&origin=FACETED_SEARCH&page={page}&sid={sid}"
+        driver.get(url) # Go to next page.
+        time.sleep(5)
+        connect_buttons = driver.find_elements(By.XPATH, '//button[contains(@aria-label, "Invite")]')
+        for button in connect_buttons:
+            scroll_to_element(driver, button)
+            name = button.get_attribute("aria-label").split(' ')[1]
+            time.sleep(.5)
+            button.click()
+            add_a_note(driver)
+            time.sleep(.5)
+            compose_new_connection(driver, name)
+            time.sleep(1)
+        #click_next(driver)
+        time.sleep(5)
+except Exception as e:
+    print(e)
+    show_popup("ERROR: something went wrong.\nPress 'Continue' to exit program.")
