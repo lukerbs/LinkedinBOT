@@ -236,7 +236,7 @@ def easy_apply(driver, job_description):
                     print(f"ALERT: Form element was bypassed.")
                     break
 
-                if check_education_page() and SKIP_EDUCTATION_FORM:
+                if check_education_page(form_element=form_element) and SKIP_EDUCTATION_FORM:
                     application_error_close(form_element=form_element)
                     return
 
