@@ -121,6 +121,21 @@ def check_education_page(form_element):
     print(f"ALERT: Not skipping education section!")
     return False
         
+
+def attempt_skip():
+    try:
+        click_next(driver)
+        time.sleep(1)
+        return
+    except:
+        pass
+    try:
+        click_review(driver)
+        time.sleep(1)
+        return
+    except:
+        pass
+    
     
 
 def check_window(driver, phrase):
@@ -140,6 +155,7 @@ def click_next(driver):
 def click_review(driver):
     xpath_expression = '//button[@aria-label="Review your application"]'
     review_button = driver.find_element(By.XPATH, xpath_expression)
+    scroll_to_element(driver, review_button)
     review_button.click()
     
 def submit_application(driver):
@@ -189,9 +205,6 @@ def application_error_close(driver):
     discard_application(driver)
     time.sleep(1)
     return
-    
-def get_answer(question):
-    return
 
 def easy_apply(driver, job_description):
     failures = 0
@@ -211,7 +224,6 @@ def easy_apply(driver, job_description):
             try:
                 click_next(driver)
                 time.sleep(1)
-                continue
             except:
                 pass
         if check_window(driver=driver, phrase='Work authorization') and not check_window(driver=driver, phrase='Review your application'):
@@ -219,14 +231,13 @@ def easy_apply(driver, job_description):
             try:
                 click_next(driver)
                 time.sleep(1)
-                break
             except:
                 pass
         form_element = custom_q_form()
         if form_element and not check_window(driver=driver, phrase='Review your application'):
             print(f"\n-- FORM SECTION APPLICATION - -\n")
             try:
-                if not "additional" in form_element.text or "cover letter" not in form_element.text.lower():
+                if not "additional" in form_element.text.lower() or "cover letter" not in form_element.text.lower():
                     try:
                         click_next(driver)
                     except:
@@ -247,6 +258,8 @@ def easy_apply(driver, job_description):
                 # Get text input questions
                 text_questions = []
                 text_input_labels = [q_label for q_label in form_element.find_elements(By.TAG_NAME, "label") if q_label.get_attribute("class") == "artdeco-text-input--label"]
+                text_input_labels.extend([q_label for q_label in form_element.find_elements(By.TAG_NAME, "label") if q_label.get_attribute("data-test-single-typeahead-entity-form-title") == "true"])
+                
                 for label in text_input_labels:
                     question = label.text
                     field_id = label.get_attribute("for")
@@ -271,6 +284,11 @@ def easy_apply(driver, job_description):
                 # Get radio button input sections
                 xpath_expression = '//fieldset[@data-test-form-builder-radio-button-form-component="true"]'
                 radio_btn_sections = form_element.find_elements(By.XPATH, xpath_expression)
+                xpath_expression = '//fieldset[@data-test-checkbox-form-component="true"]'
+                checkboxes = form_element.find_elements(By.XPATH, xpath_expression)
+                radio_btn_sections.extend(checkboxes)
+
+
                 radio_btn_questions = []
                 for radio_section in radio_btn_sections:
                     section_completed = False
@@ -342,14 +360,12 @@ def easy_apply(driver, job_description):
                     # Continue to next section
                     try:
                         click_next(driver)
-                        time.sleep(2)
-                        break
+                        continue
                     except:
                         pass
                     try:
                         click_review(driver)
-                        time.sleep(2)
-                        break
+                        continue
                     except:
                         pass
                 print(f"\n- - UNANSWERED QUESTIONS - -")
@@ -376,6 +392,7 @@ def easy_apply(driver, job_description):
                 
                 # Review the application
                 click_next(driver)
+                continue
                 time.sleep(2)
             except Exception as e:
                 print(traceback.format_exc())
@@ -383,33 +400,45 @@ def easy_apply(driver, job_description):
 
         if check_window(driver=driver, phrase='Review your application'):
             time.sleep(1)
-            #print('You are on the application review section')
-            submit_application(driver)
-            return
-        
-        else:
-            # Fail safe, last resort
-            try:
-                click_next(driver)
-                time.sleep(2)
-                continue
-            except:
-                pass
-
             try:
                 click_review(driver)
-                time.sleep(2)
                 continue
             except:
                 pass
-            
-            failures += 1
-            if failures >= 10:
-                print(f"\n- - STUCK IN A LOOP - - ")
-                print(f"Discarding application.")
-                application_error_close(driver)
+            try:
+                click_next(driver)
+                continue
+            except:
+                pass
+            try:
+                submit_application(driver)
                 return
-            #show_popup(message='Application section not recognized.\nComplete application section and press CONTINUE:')
+            except:
+                pass
+        
+        # Fail safe, last resort
+        try:
+            click_next(driver)
+            time.sleep(2)
+            continue
+        except:
+            pass
+
+        try:
+            click_review(driver)
+            time.sleep(2)
+            continue
+        except:
+            pass
+        
+        failures += 1
+        print(f"WARNING: loop {failures}")
+        if failures >= 10:
+            print(f"\n- - STUCK IN A LOOP - - ")
+            print(f"Discarding application.")
+            application_error_close(driver)
+            return
+        #show_popup(message='Application section not recognized.\nComplete application section and press CONTINUE:')
         
 # Pagination
 def get_nav_pages(driver):
