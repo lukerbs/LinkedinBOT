@@ -146,12 +146,14 @@ def custom_q_form():
 def close_application(driver):
     xpath_expression = '//button[@aria-label="Dismiss"]'
     close_button = get_element(by=By.XPATH, selector=xpath_expression, timeout=6)
-    close_button.click()
+    if close_button:
+        close_button.click()
     
 def discard_application(driver):
     xpath_expression = '//button[@data-control-name="discard_application_confirm_btn"]'
-    discard_button = driver.find_element(By.XPATH, xpath_expression)
-    discard_button.click()
+    discard_button = get_element(by=By.XPATH, selector=xpath_expression, timeout=6)
+    if discard_button:
+        discard_button.click()
     
 
 
@@ -164,9 +166,9 @@ def field_requirement(element):
     
 def application_error_close(driver):
     close_application(driver)
-    time.sleep(3)
+    time.sleep(1)
     discard_application(driver)
-    time.sleep(3)
+    time.sleep(1)
     return
     
 def get_answer(question):
@@ -482,7 +484,10 @@ try:
             easy_apply_button.click()
             time.sleep(1)
 
-            easy_apply(driver, job_description)
+            try:
+                easy_apply(driver, job_description)
+            except:
+                application_error_close(driver)
 
         # Go to next page of job search results
         scroll_to_element(driver, pages[i+1])
