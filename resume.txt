@@ -1,79 +1,103 @@
 Luke Daniel Kerbs 
 Phone: (669) 258-6315 | Email: LDK.kerbs@gmail.com  | GitHub: https://github.com/lukerbs
 
+Address: 111 Third Street
+City: Morgan Hill
+State: Califoria
+ZIP: 95037
+County: Santa Clara
 
-CORE SKILLS & COMPETENCIES
+Expected Salary: $140,000
+
+# CORE SKILLS & COMPETENCIES
 Python: Jupyter, Flask, Pandas, Numpy, web-automation, web-scraping, data processing, Pytorch, Tensorflow
-Software Development: Git, Linux, Docker, Terraform, CI/CD pipelines, cloud deployment, networking, Web-Technologies, API Development, Full-Stack Development, Agile methodology
+Software Development: Git, Linux, Docker, Terraform, CI/CD pipelines, cloud deployment, networking, Web-Technologies, API Development, Full-Stack Development, Agile methodology, Javascript, 
 Data Science & ML: Machine learning libraries (Pytorch + Tensorflow), SQL databases, AWS SageMaker, data pipelines, data processing, data visualization tools, clustering & classification, scientific computing libraries
 AI: OpenAI API for chat completions and word embeddings, open source models
 Cloud: AWS Solutions Architect, Infrastructure as Code (Terraform), cloud databases, cloud computing, serverless computing, scalable architecture
 Collaboration Tools: Atlassian Suite, Slack, Teams, Google Business Suite, GitHub, GitLab
 Soft Skills: Open dialog, clear communication, collaboration, active listening, supporting others
 
-EXPERIENCE
-Senior Data Scientist, Endava, Charlotte, NC                                                                               February 2022 - Present
-Lineage Logistics: Worked alongside a diverse team of software engineers, data scientists, physicists, and researchers to automate the operations of a vast network of refrigerated distribution facilities. This network of facilities serves as the backbone for the largest global logistics company specializing in cold food storage and transport. Developed predictive logistics algorithms, API services, and data pipelines primarily working with Python, Docker containerization, and AWS cloud-based SQL databases. 
-ESL Credit Union: Provided consultation and guidance for ESL’s software engineering team regarding best practices for building applications in Python. Lead weekly meetings with the engineering team, refactored their existing code base, and developed a framework and guide for their software development team to follow w
-Pindrop: Provided a full evaluation and assessment of the Pindrop platform’s technical strengths and weaknesses, covering the application’s architecture, infrastructure, code base, and lifecycle. 
+# EXPERIENCE
+Job Title: Senior Data Scientist, 
+Company: Endava 
+Location: Charlotte, NC                                                                               
+Dates: February 2022 - Present
+For our client Lineage Logistics I Worked alongside a diverse team of software engineers, data scientists, physicists, and researchers to automate the operations of a vast network of refrigerated distribution facilities. This network of facilities serves as the backbone for the largest global logistics company specializing in cold food storage and transport. Developed predictive logistics algorithms, API services, and data pipelines primarily working with Python, Docker containerization, and AWS cloud-based SQL databases. 
+For our client ESL Credit Union I provided consultation and guidance for ESL’s software engineering team regarding best practices for building applications in Python. Lead weekly meetings with the engineering team, refactored their existing code base, and developed a framework and guide for their software development team to follow w
+For a startup client mobile app, I provided a full evaluation and assessment of the Pindrop platform’s technical strengths and weaknesses, covering the application’s architecture, infrastructure, code base, and lifecycle. 
 
-Data Engineer (Contract), Bizconnect B2B Search Engine, Las Vegas, NV                       April 2021 - September 2021  
+Job Title: Data Engineer (Contract)
+Bizconnect B2B Search Engine, 
+Las Vegas, NV                       
+April 2021 - September 2021  
 Enriched Bizconnect’s existing global B2B search engine data by automating the collection of over 6 million company profile records from public internet sources (including email addresses, business descriptions, phone numbers, business addresses, and social media accounts).
 Performed data analysis on a dataset with over 18 Million records and reported results to C-level stakeholders within the company.
 
-Robotics Software Engineer (Contract), SuperTech FT, San Francisco, CA                  October 2020 - September 2021  
+Job Title: Robotics Software Engineer (Contract), 
+SuperTech FT
+San Francisco, CA                  
+October 2020 - September 2021  
 Responsible for designing and implementing the development of SuperTech’s web-application platform which provides users remote, global access and control to robotic resources via a web-browser.
 Trained and tested edge computer vision models for an AI teaching assistant.
 Helped facilitate a partnership between SuperTech FT and Code Tenderloin to offer introductory robotics education to students in San Francisco’s Tenderloin neighborhood. 
 Led meetings with engineers to develop weekly sprint goals.
 Showcased ability to plan and successfully deliver complex software development tasks.
 
-ML Software Engineer (Internship), DeepSig, Washington DC                                                  March 2020 -  July 2020  
+Job Title: ML Software Engineer (Internship)
+DeepSig
+Washington DC                                                  
+March 2020 -  July 2020  
 Responsible for developing software and state-of-the-art machine learning algorithms for DeepSig’s machine learning and signal processing products used in military and defense applications.
 Developed neural network classification  models for classifying radar time-series data.
 
-Data Scientist (Internship), GSI Technology, Sunnyvale, CA                                                July 2019 - September 2019  
+Job Title: Data Scientist (Internship), GSI Technology, Sunnyvale, CA                                                
+July 2019 - September 2019  
 Developed highly optimized machine learning models designed to showcase the satellite, wireless, and defense capabilities of GSI Technology’s microprocessors.
 Implemented clustering based similarity search classification technique on extracted neural network embeddings.
 Tested similarity search algorithm performance on accelerated computing hardware and published results in a series of blog articles.
 Demonstrated ability to understand and implement research papers on state-of-the-art deep learning techniques.
 
-
-EXPERIENCE (continued)
-
-Machine Learning Engineer (Internship), Infosys, Bangalore, India                                          March 2017 - June 2017  
+Job Title: Machine Learning Engineer (Internship), Infosys, Bangalore, India                                          
+March 2017 - June 2017  
 Developed a Python program that automates the extraction and classification of information from semi-structured documents using various natural language processing and image recognition Python libraries.
 Eight-week project based internship under the guidance of the Principal Technology Architect at Infosys. One of four globally selected candidates for Spring internship.
 
-Tech Lead (Volunteer), Forest of Nisene Marks State Park, Aptos, CA                                                      2018 -  2023  
+Job Title: Tech Lead (Volunteer) 
+Forest of Nisene Marks State Park 
+Aptos, CA                                                      
+2018 -  2023  
 Modernized and rehabilitated the organization’s web footprint including a website overhaul, multi-channel social media engagement campaign, search engine advertising, and online donation collection strategy
 Leveraged free online resources and software available to nonprofits, such as the Google for Nonprofits program and TechSoup for Nonprofits.
 
-EDUCATION
-University of California, Davis                                                                                                         Graduated:  June 2020  
-B.A. in Mathematics
-UC Washington Program Alumnus, Spring 2020 cohort
+# EDUCATION
+University: University of California, Davis 
+Graduated: June 2020  
+Degree: B.A. in Mathematics
+Honors: UC Washington Program Alumnus, Spring 2020 cohort
 
-CERTIFICATES & COURSES
-AWS Solutions Architect Associate, Amazon Web Services                                                                            August 2023
-Line Manager Training Certificate, Endava                                                                                                         July 2023
+# CERTIFICATES & COURSES
+- AWS Solutions Architect Associate, Amazon Web Services (August 2023)
+- Line Manager Training Certificate, Endava (July 2023)
 	
 PUBLICATIONS
-Real-Time Anomaly Detection with AWS SageMaker & Kinesis Streams                                               November 2023
-Making Sense of Ebay’s Similarity Search Algorithm                                                                                   October 2022
-Building a Web-App with Python                                                                                                                    October 2022
-Computer Vision & Robotics                                                                                                                            January 2022
-Classification with Similarity Search                                                                                                           September 2019
-Building a Radio Wave Classifier in Python                                                                                               September 2019
-Deep Learning for Radio Waves                                                                                                                  September 2019
-An Overview of Signal Classification                                                                                                                August 2019
-My First Adventures in Similarity Search                                                                                                            July 2019                                                                                  
+Real-Time Anomaly Detection with AWS SageMaker & Kinesis Streams (November 2023)
+Making Sense of Ebay’s Similarity Search Algorithm (October 2022)
+Building a Web-App with Python  (October 2022)
+Computer Vision & Robotics  (January 2022)
+Classification with Similarity Search (September 2019)
+Building a Radio Wave Classifier in Python  (September 2019)
+Deep Learning for Radio Waves  (September 2019)
+An Overview of Signal Classification  (August 2019)
+My First Adventures in Similarity Search (July 2019)                                                                                  
 
-AWARDS
-The Santa Cruz County “Be The Difference” Award                                                                                   October 2020
+# AWARDS
+- The Santa Cruz County “Be The Difference” Award                                                                                   October 2020
 
-PROFESSIONAL  SUMMARY
+# PROFESSIONAL  SUMMARY
 Luke is a highly skilled technologist with extensive expertise in Python, software development, cloud technologies, data science, and mathematics. With a proven track record of delivering successful large-scale projects, Luke excels in leveraging data and cutting-edge technologies to automate complex operations, drive efficiency, and give businesses the competitive advantage required for long-term growth and success.
 As a Senior Data Scientist at Endava, Luke collaborated effectively with cross-functional teams, including software engineers, physicists, and researchers to automate and optimize the operations of a global logistics company specializing in cold food storage and transportation. He successfully developed API services, data pipelines, and algorithms, contributing significantly to the warehouse operations’ improvement.
 I live in the Bay Area, California and am open to a hybrid work schedule, although fully-remote is my preference. 
-I have worked in start-up environments and for large companies.
+I have worked in start-up environments and for large companies. I have 10 years of experience in coding and leading teams.
+As a senior data scientist with expertise in Python, machine learning, and cloud platforms, I have developed and deployed advanced AI solutions, including generative AI for automated YouTube content creation, real-time anomaly detection systems using AWS SageMaker and Kinesis Streams, and computer vision applications. My projects highlight skills in Python development, deep learning with TensorFlow and Keras, cloud infrastructure on AWS and GCP, and data processing. I excel in creating innovative solutions, such as automated video uploads with LLMs, and developing open-source libraries for text-to-speech alignment and lip-sync animation. My strong project management, collaboration, and communication skills complement my technical abilities, making me adept at delivering impactful, real-world applications.
+I have a lot of experience using LLM APIs like OpenAI GPT and Google Gemini for automating custom chatbots, parsing documents, etc. I also know how to build APIs and web applications.
