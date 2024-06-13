@@ -164,23 +164,6 @@ def connection_status(driver):
         print('You are NOT YET CONNECTED to this profile!')
         return 'NOT CONNECTED'
     
-    
-def close_profile():
-    # close profile tab 
-    driver.close()
-
-    # switch back to results page
-    driver.switch_to.window(results_window)
-    
-def open_profile(profile_link):
-    driver.execute_script(f"window.open('{profile_link}', '_blank');")
-    time.sleep(1)
-
-    # Switch to the new profile tab
-    new_tab_handle = [handle for handle in driver.window_handles if handle != results_window][0]
-    driver.switch_to.window(new_tab_handle)
-    time.sleep(5)
-    
 def load_introduction(name, path='./introduction.txt'):
     with open(path, 'r') as file:
         file_content = file.read()
