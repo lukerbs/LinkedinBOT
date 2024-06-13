@@ -235,7 +235,7 @@ def easy_apply(driver, job_description):
                     time.sleep(1)
 
                 if check_education_page(form_element=form_element) and SKIP_EDUCTATION_FORM:
-                    application_error_close(form_element=form_element)
+                    application_error_close(driver)
                     return
 
                 # Education Element
