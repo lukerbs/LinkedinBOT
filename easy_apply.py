@@ -22,7 +22,8 @@ def str_to_bool(value):
 load_dotenv()
 # Access the variables
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-SKIP_EDUCTATION_FORM = str_to_bool(os.getenv('OPENAI_API_KEY'))
+SKIP_EDUCTATION_FORM = str_to_bool(os.getenv('SKIP_EDUCATION_FORM'))
+print(SKIP_EDUCTATION_FORM)
 
 client = openai.OpenAI(api_key=OPENAI_API_KEY)
 def chatgpt(query:str, model='gpt-4-turbo-preview', max_tokens=None):
@@ -112,7 +113,9 @@ def check_education_page(form_element):
     elements = form_element.find_elements(By.XPATH, xpath_expression)
     for element in elements:
         if element.text == "Education":
+            print(f"ALERT: Skipping education section!")
             return True
+    print(f"ALERT: Not skipping education section!")
     return False
         
     
