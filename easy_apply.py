@@ -15,11 +15,14 @@ import openai
 
 from utils.prompting import question_prompt, extract_json
 
+def str_to_bool(value):
+    return value.lower() == 'true'
 
 # Load .env file
 load_dotenv()
 # Access the variables
 OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+SKIP_EDUCTATION_FORM = str_to_bool(os.getenv('OPENAI_API_KEY'))
 
 client = openai.OpenAI(api_key=OPENAI_API_KEY)
 def chatgpt(query:str, model='gpt-4-turbo-preview', max_tokens=None):
@@ -103,6 +106,16 @@ def expose_jobs(driver):
         print(f"WARNING: No job links discovered.")
         return None
 
+
+def check_education_page(form_element):
+    xpath_expression = '//span[@class="t-bold"]'
+    elements = form_element.find_elements(By.XPATH, xpath_expression)
+    for element in elements:
+        if element.text == "Education":
+            return True
+    return False
+        
+    
 
 def check_window(driver, phrase):
     xpath_expression = '//div[@class="jobs-easy-apply-content"]'
@@ -212,13 +225,22 @@ def easy_apply(driver, job_description):
                         click_next(driver)
                     except:
                         pass
+                    try:
+                        click_review(driver)
+                    except:
+                        pass
                     time.sleep(1)
 
                 form_element = custom_q_form()
                 if not form_element:
                     print(f"ALERT: Form element was bypassed.")
-                    continue
+                    break
 
+                if check_education_page() and SKIP_EDUCTATION_FORM:
+                    application_error_close(form_element=form_element)
+                    return
+
+                # Education Element
                 # Get text input questions
                 text_questions = []
                 text_input_labels = [q_label for q_label in form_element.find_elements(By.TAG_NAME, "label") if q_label.get_attribute("class") == "artdeco-text-input--label"]
@@ -315,9 +337,18 @@ def easy_apply(driver, job_description):
                 unanswered_questions = drop_down_questions + radio_btn_questions + text_questions
                 if not unanswered_questions:
                     # Continue to next section
-                    click_next(driver)
-                    time.sleep(2)
-                    break
+                    try:
+                        click_next(driver)
+                        time.sleep(2)
+                        break
+                    except:
+                        pass
+                    try:
+                        click_review(driver)
+                        time.sleep(2)
+                        break
+                    except:
+                        pass
                 print(f"\n- - UNANSWERED QUESTIONS - -")
                 pprint(unanswered_questions)
                 print(f"\- - - - - - - -")
@@ -374,6 +405,7 @@ def easy_apply(driver, job_description):
                 print(f"\n- - STUCK IN A LOOP - - ")
                 print(f"Discarding application.")
                 application_error_close(driver)
+                return
             #show_popup(message='Application section not recognized.\nComplete application section and press CONTINUE:')
         
 # Pagination
