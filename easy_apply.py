@@ -114,7 +114,10 @@ def check_education_page(form_element):
     for element in elements:
         if element.text == "Education":
             print(f"ALERT: Skipping education section!")
-            return True
+            xp = '//select[@name="month"]'
+            menu = get_element(by=By.XPATH, selector=xp, timeout=3)
+            if menu:
+                return True
     print(f"ALERT: Not skipping education section!")
     return False
         
@@ -235,7 +238,9 @@ def easy_apply(driver, job_description):
                     time.sleep(1)
 
                 if check_education_page(form_element=form_element) and SKIP_EDUCTATION_FORM:
+                    print("ALERT: Closing job app (education form)")
                     application_error_close(driver)
+                    print(f"Job application was discarded.")
                     return
 
                 # Education Element
@@ -515,8 +520,10 @@ try:
             time.sleep(1)
 
             try:
+                print("Applying to new job.")
                 easy_apply(driver, job_description)
             except:
+                print('Closinig application 2.')
                 application_error_close(driver)
 
         # Go to next page of job search results
