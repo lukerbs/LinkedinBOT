@@ -28,6 +28,7 @@ Note: This has only been tested on Mac OS. I have not tested it on Windows.
 ## Usage: Recruiter Messaging Bot
 1. Customize your message for recruiters in `introduction.txt`
 	- NOTE: Be sure to leave the "FIRST_NAME" string in `introduction.txt` 
+		- ( this is so the bot can address recruiter by their first name)
 	- NOTE: Your introduction should not be longer than 280 characters
 2. Start the bot by running `python3 connect.py`
 3. Enter your LinkedIn username and password in the pop-up window if this is your first time using the bot.

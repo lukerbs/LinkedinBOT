@@ -16,8 +16,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
 
 from __init__ import main_window, driver
-from util import success_chime, show_popup, show_input_popup, load_config
+from util import success_chime, show_popup, show_input_popup, load_config, cleanup
+import atexit
 
+atexit.register(cleanup)
 
 # - - - NEW CONNECTION FUNCTIONS - - - 
 
@@ -169,7 +171,8 @@ def load_introduction(name, path='./introduction.txt'):
         file_content = file.read()
     intro = file_content.replace('FIRST_NAME', name)
     if len(intro) > 300:
-        print(f'ERROR:\nYour introduction is too long ({len(intro)} chars).\nShorten your intro to no more than 300 characters and restart the bot.')
+        error_message = f'ERROR:\nYour introduction is too long ({len(intro)} chars).\nShorten your intro to no more than 300 characters and restart the bot.'
+        show_popup(message=error_message, error=True)
         exit()
         
     return intro
