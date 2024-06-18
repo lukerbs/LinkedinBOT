@@ -522,9 +522,11 @@ else:
 # Manually add any additional job search filters.
 show_popup(message='Manually select and apply any additional job search filters in the browser press CONTINUE:')
 
-pages = get_nav_pages(driver)
-time.sleep(2)
+
+
 try:
+    pages = get_nav_pages(driver)
+    time.sleep(2)
     num_pages = len(pages)
     for i in range(num_pages):
         pages = get_nav_pages(driver)
