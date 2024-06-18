@@ -150,13 +150,29 @@ def click_next(driver):
     xpath_expression = '//button[@aria-label="Continue to next step"]'
     next_button = get_element(by=By.XPATH, selector=xpath_expression, timeout=3)
     scroll_to_element(driver, next_button)
+    body = get_element(by=By.TAG_NAME, selector='body', timeout=5)
+    page_text = body.text
     next_button.click()
+    body = get_element(by=By.TAG_NAME, selector='body', timeout=5)
+    page_text_new = body.text
+    if page_text == page_text_new:
+        return False
+    else:
+        return True
     
 def click_review(driver):
     xpath_expression = '//button[@aria-label="Review your application"]'
     review_button = driver.find_element(By.XPATH, xpath_expression)
+    body = get_element(by=By.TAG_NAME, selector='body', timeout=5)
+    page_text = body.text
     scroll_to_element(driver, review_button)
     review_button.click()
+    body = get_element(by=By.TAG_NAME, selector='body', timeout=5)
+    page_text_new = body.text
+    if page_text == page_text_new:
+        return False
+    else:
+        return True
     
 def submit_application(driver):
     xpath_expression = '//button[@aria-label="Submit application"]'
@@ -209,29 +225,54 @@ def application_error_close(driver):
 def easy_apply(driver, job_description):
     failures = 0
     while True:
+        if failures > 1:
+            print(f"WARNING: {failures} Consecutive failures.")
+        # Quit current application if gets stuck.
+        print(f"WARNING: loop {failures}")
+        if failures >= 10:
+            print(f"\n- - STUCK IN A LOOP - - ")
+            print(f"Discarding application.")
+            application_error_close(driver)
+            return
+        
         if check_window(driver=driver, phrase='Contact info') and not check_window(driver=driver, phrase='Review your application'):
             try:
                 submit_application(driver)
                 return
             except:
-                click_next(driver)
+                if click_next(driver):
+                    failures = 0
+                else:
+                    failures += 1
         if check_window(driver=driver, phrase='Voluntary self identification') and not check_window(driver=driver, phrase='Review your application'):
             #print('You are in the Self Identification section')
-            click_next(driver)
+            if not click_next(driver):
+                failures += 1
+            else:
+                failures = 0
+
 
         if check_window(driver=driver, phrase='Be sure to include an updated resume') and not check_window(driver=driver, phrase='Review your application'):
             #print('You are on the resume section')
             try:
-                click_next(driver)
+                if click_next(driver):
+                    failures = 0
+                else:
+                    failures += 1
                 time.sleep(1)
             except:
+                failures += 1
                 pass
         if check_window(driver=driver, phrase='Work authorization') and not check_window(driver=driver, phrase='Review your application'):
             #print('You are on the work authorization section')
             try:
-                click_next(driver)
+                if click_next(driver):
+                    failures = 0
+                else:
+                    failures +=1
                 time.sleep(1)
             except:
+                failures += 1
                 pass
         form_element = custom_q_form()
         if form_element and not check_window(driver=driver, phrase='Review your application'):
@@ -239,12 +280,19 @@ def easy_apply(driver, job_description):
             try:
                 if not "additional" in form_element.text.lower() or "cover letter" not in form_element.text.lower():
                     try:
-                        click_next(driver)
+                        if click_next(driver):
+                            failures = 0
                     except:
+                        failures += 1
                         pass
                     try:
-                        click_review(driver)
+
+                        if click_review(driver):
+                            failures = 0
+                        else:
+                            failures += 1
                     except:
+                        failures += 1
                         pass
                     time.sleep(1)
 
@@ -359,14 +407,22 @@ def easy_apply(driver, job_description):
                 if not unanswered_questions:
                     # Continue to next section
                     try:
-                        click_next(driver)
+                        if click_next(driver):
+                            failures = 0
+                        else:
+                            failures += 1
                         continue
                     except:
+                        failures += 1
                         pass
                     try:
-                        click_review(driver)
+                        if click_review(driver):
+                            failures = 0
+                        else:
+                            failures += 1
                         continue
                     except:
+                        failures +1
                         pass
                 print(f"\n- - UNANSWERED QUESTIONS - -")
                 pprint(unanswered_questions)
@@ -391,7 +447,10 @@ def easy_apply(driver, job_description):
                     time.sleep(1)
                 
                 # Review the application
-                click_next(driver)
+                if click_next(driver):
+                    failures = 0
+                else:
+                    failures +=1
                 continue
                 time.sleep(2)
             except Exception as e:
@@ -401,43 +460,51 @@ def easy_apply(driver, job_description):
         if check_window(driver=driver, phrase='Review your application'):
             time.sleep(1)
             try:
-                click_review(driver)
+                if click_review(driver):
+                    failures = 0
+                else:
+                    failures += 1
                 continue
             except:
+                failures += 1
                 pass
             try:
-                click_next(driver)
+                if click_next(driver):
+                    failures = 0
+                else:
+                    failures += 1
                 continue
             except:
+                failures += 1
                 pass
             try:
                 submit_application(driver)
                 return
             except:
+                failures += 1
                 pass
         
         # Fail safe, last resort
         try:
-            click_next(driver)
-            time.sleep(2)
+            if click_next(driver):
+                failures = 0
+            else:
+                failures += 1
             continue
         except:
+            failures += 1
             pass
 
         try:
-            click_review(driver)
-            time.sleep(2)
+            if click_review(driver):
+                failures = 0
+            else:
+                failures += 1
             continue
         except:
+            failures += 1
             pass
-        
-        failures += 1
-        print(f"WARNING: loop {failures}")
-        if failures >= 10:
-            print(f"\n- - STUCK IN A LOOP - - ")
-            print(f"Discarding application.")
-            application_error_close(driver)
-            return
+
         #show_popup(message='Application section not recognized.\nComplete application section and press CONTINUE:')
         
 # Pagination
