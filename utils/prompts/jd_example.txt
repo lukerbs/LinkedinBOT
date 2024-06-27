@@ -1,0 +1,52 @@
+Senior Data Scientis, Adobe
+
+Qualifications
+•
+A successful Data Scientist strives for long term success, along with:
+•
+A self learner and quick starter
+•
+Expertise in performing data extraction, manipulation and visualization
+•
+Experience with distributed computing tools (Hadoop, Hive/Spark)
+•
+Expert in SQL and proficient in Data Visualization tools like Power BI/Tableau
+•
+Experience applying statistical and machine learning techniques like hypothesis testing, classification, regression, time series forecasting and clustering to real-world data sets
+•
+Hands-On coding experience with at least one programming language (Python/R)
+•
+Experience in solving analytical problems using quantitative and qualitative approaches
+•
+Experience in presenting qualitative and quantitative analysis/insights
+•
+Experience working in a dynamic and agile environment, management of multiple projects with excellent Verbal and written communication skills
+•
+Master’s in Data Science/Analytics/Statistics or related field
+•
+Update your Resume/CV and Workday profile – don’t forget to include your uniquely ‘Adobe’ experiences and volunteer work
+•
+Visit the Internal Mobility page on Inside Adobe to learn more about the process and set up a job alert for roles you’re interested in
+Responsibilities
+•
+With a focus on understanding DMe B2B customers, analyzing trends in product engagement, digital customer journeys and retention to better engage our customers with our products thereby increasing Customer LTV, you would be closely partnering with our Digital and Product Strategy, GTM and Sales teams
+•
+You will play a significant role in driving the growth of Adobe DMe B2B segment by analyzing and reporting on insights that drive critical business decisions
+•
+Perform large scale data analysis and develop effective Machine learning models for segmentation, classification, regression, time series, etc
+•
+Enhance/Improve the existing M/L models to ensure continuous alignment with business objectives
+•
+Design and implement reporting dashboards and track Key Performance Indicators and provide useful insights
+•
+Suggest recommendations based on practical insights
+•
+Unlock new opportunities for growth by discovering insights, automate processes and predictive modeling
+•
+Work closely with product and strategy teams to proactively define Call to Action programs for B2B Customers
+•
+Build and Analyze Digital Customers Journeys starting from different surfaces for B2B customers with an intent to suggest improvements in the journey stages and insights into optimization opportunities
+•
+Develop propensity models to prioritize actions/leads
+•
+Suggest improvements in technologies to help scale the team

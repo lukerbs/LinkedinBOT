@@ -1,0 +1,24 @@
+# INSTRUCTIONS:
+- Based on the following resume and job description, generate a new resume that is custom tailored for the job description.
+    - You should return the custom resume in markdown format, and make sure the formatting attractive and readable.
+    - The resume should be tweaked and custom tailored to maximize keywords in the job description
+    - The the professional summary should be placed near the top of the resume and should be highly tailored to the job description.
+    - Based on my current resume, if you are not sure if I have a specific skill or experience required in the job description, make your best inference.
+    - Do not add additional achievements or skills to my job experience sections, unless it is fairly obvious that they would be truthful.
+    - Do not include a markdown wrapper in the response (i.e., ```markdown etc.)
+    - You do not need to use the same format as my existig resume, but make sure to indet any bullet points.
+
+# RESUME:
+    - - resume start - -
+    '''
+MY_RESUME
+    '''
+    - - resume end - -
+
+# JOB DESCRIPTION:
+    - - job description start - -
+    '''
+JOB_DESCRIPTION
+    '''
+    - - job description start - -
+

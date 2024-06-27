@@ -50,6 +50,20 @@ def add_a_note(driver):
     xpath_expression = '//button[@aria-label="Add a note"]'
     add_a_note_button = get_element(by=By.XPATH, selector=xpath_expression, timeout=10)
     add_a_note_button.click()
+
+def write_a_message(driver, message):
+    # Add a note
+    print('CLICKING ADD A NOTE')
+    xpath_expression = '//button[@aria-label="Write a message..."]'
+    message_box = get_element(by=By.XPATH, selector=xpath_expression, timeout=10)
+    message_box.send_keys(message)
+
+    xpath_expression = '//button[@class="msg-form__send-button artdeco-button artdeco-button--1"]'
+    send_button = get_element(by=By.XPATH, selector=xpath_expression, timeout=5)
+    send_button.click()
+    time.sleep(2)
+    close_all_chats(driver)
+
     
     
 def compose_new_connection(driver, name):
@@ -194,9 +208,9 @@ def introduce(driver, profile_link):
         print('Skipping introduction! Your connection is already pending.')
     else:
         print('Skipping message, already connected')
-        # click_message(driver)
-        # if check_already_sent(driver, first_name) == False:
-        #     compose_message(driver, first_name)
+        click_message(driver)
+        if check_already_sent(driver, first_name) == False:
+            compose_message(driver, first_name)
     close_all_chats(driver)
 
 
@@ -308,6 +322,7 @@ try:
         url = f"https://www.linkedin.com/search/results/people/?activelyHiringForJobTitles=%5B%22-100%22%5D&keywords={query}&origin=FACETED_SEARCH&page={page}&sid={sid}"
         driver.get(url) # Go to next page.
         time.sleep(5)
+        #input()
         connect_buttons = driver.find_elements(By.XPATH, '//button[contains(@aria-label, "Invite")]')
         for button in connect_buttons:
             scroll_to_element(driver, button)
@@ -318,6 +333,15 @@ try:
             time.sleep(.5)
             compose_new_connection(driver, name)
             time.sleep(1)
+
+        # message_buttons = driver.find_elements(By.XPATH, f'//button[contains(@aria-label, "Message")]')
+        # for button in connect_buttons:
+        #     scroll_to_element(driver, button)
+        #     name = button.get_attribute("aria-label").split(' ')[1]
+        #     time.sleep(.5)
+        #     button.click()
+        #     write_a_message(driver, message=load_introduction(name=name))
+        #     time.sleep(1)
         #click_next(driver)
         time.sleep(5)
 except Exception as e:

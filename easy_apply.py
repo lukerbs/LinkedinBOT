@@ -1,59 +1,31 @@
+from pprint import pprint
+import traceback
+import atexit
+import time
+import os
+
 from selenium.webdriver.common.action_chains import ActionChains
-from selenium.webdriver.common.keys import Keys
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.common.exceptions import TimeoutException
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
 from dotenv import load_dotenv
-import traceback
-from pprint import pprint
-import time
-import atexit
-from dotenv import load_dotenv
-import os
-import openai
-
-from utils.prompting import question_prompt, extract_json
-
-def str_to_bool(value):
-    return value.lower() == 'true'
-
-# Load .env file
-load_dotenv()
-# Access the variables
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
-SKIP_EDUCTATION_FORM = str_to_bool(os.getenv('SKIP_EDUCATION_FORM'))
-print(SKIP_EDUCTATION_FORM)
-
-client = openai.OpenAI(api_key=OPENAI_API_KEY)
-def chatgpt(query:str, model='gpt-4-turbo-preview', max_tokens=None):
-    print(f"Queryig ChatGPT...")
-    # select model from ['gpt-3.5-turbo', 'gpt-4', 'gpt-4-turbo-preview', 'gpt-4-32k', 'gpt-4-1106-preview']
-    completion = client.chat.completions.create(
-        model=model,
-        max_tokens=max_tokens, #4000
-        messages=[
-            {"role": "user", "content": query}
-        ]
-    )
-
-    response = completion.choices[0].message.content
-
-    return response
 
 from __init__ import driver
 from util import success_chime, show_popup, show_input_popup, load_config, cleanup
+from utils.prompting import question_prompt, extract_json
+from utils.ai import chatgpt
+from utils.helpers import str_to_bool
 
 atexit.register(cleanup)
+load_dotenv()
 
 print('\n - - - LINKEDINBOT - - - \n')
-
+SKIP_EDUCTATION_FORM = str_to_bool(os.getenv('SKIP_EDUCATION_FORM'))
 config = load_config()
 USERNAME = config['Email']
 PASSWORD = config['Password']
-
-
-
 
 def wait():
     input('Press enter to continue: ')
@@ -66,7 +38,6 @@ def get_element(by, selector, timeout):
     except TimeoutException:
         print(f'TimeoutException: Could not find element within {timeout} seconds.\n')
         return None
-
 
 def check_sign_in_page():
     xpath_expression = '//a[@data-test-id="home-hero-sign-in-cta"]'
@@ -92,7 +63,6 @@ def expose_jobs(driver):
             if len(job_links) >= 24:
                 # Return job links if reached 24 links.
                 return job_links
-            
 
             for job in job_links:
                 # Scroll to each link in list down to the bottom of the list.
@@ -428,10 +398,7 @@ def easy_apply(driver, job_description):
                 pprint(unanswered_questions)
                 print(f"\- - - - - - - -")
 
-                with open('./resume.txt', "r") as file:
-                    resume = file.read()
-
-                prompt = question_prompt(questions=unanswered_questions, resume=resume, job_description=job_description)
+                prompt = question_prompt(questions=unanswered_questions, job_description=job_description)
                 response = chatgpt(prompt)
                 answers = extract_json(response)
                 pprint(answers)
@@ -511,9 +478,19 @@ def easy_apply(driver, job_description):
 def get_nav_pages(driver):
     xpath_expression = '//ul[@class="artdeco-pagination__pages artdeco-pagination__pages--number"]'
     pagination_container = get_element(by=By.XPATH, selector=xpath_expression, timeout=5)
+    if not pagination_container:
+        print("Jobs list version 1 was not found. Using version 2.")
+        xpath_expression = '//ul[@class="scaffold-layout__list-container"]'
+        pagination_container = get_element(by=By.XPATH, selector=xpath_expression, timeout=5)
+        if not pagination_container:
+            print(f"Failed to find jobs list version 2")
+            
     scroll_to_element(driver, pagination_container)
     pages = pagination_container.find_elements(By.CSS_SELECTOR, "li[data-test-pagination-page-btn]")
     return pages
+
+
+    
 
 
 
