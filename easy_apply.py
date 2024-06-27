@@ -479,12 +479,9 @@ def get_nav_pages(driver):
     xpath_expression = '//ul[@class="artdeco-pagination__pages artdeco-pagination__pages--number"]'
     pagination_container = get_element(by=By.XPATH, selector=xpath_expression, timeout=5)
     if not pagination_container:
-        print("Jobs list version 1 was not found. Using version 2.")
-        xpath_expression = '//ul[@class="scaffold-layout__list-container"]'
-        pagination_container = get_element(by=By.XPATH, selector=xpath_expression, timeout=5)
-        if not pagination_container:
-            print(f"Failed to find jobs list version 2")
-            
+        print(f"There is only one page of results.")
+        return []
+
     scroll_to_element(driver, pagination_container)
     pages = pagination_container.find_elements(By.CSS_SELECTOR, "li[data-test-pagination-page-btn]")
     return pages
@@ -572,8 +569,12 @@ try:
     pages = get_nav_pages(driver)
     time.sleep(2)
     num_pages = len(pages)
+    if num_pages == 0:
+        num_pages = 1
+
     for i in range(num_pages):
-        pages = get_nav_pages(driver)
+        if pages:
+            pages = get_nav_pages(driver)
         job_links = expose_jobs(driver)
         for link in job_links:
             scroll_to_element(driver, link)
@@ -602,11 +603,14 @@ try:
                 application_error_close(driver)
 
         # Go to next page of job search results
-        scroll_to_element(driver, pages[i+1])
-        time.sleep(2)
-        pages[i+1].click()
-        print("\nALERT: Continuing to next page of job results.")
-        time.sleep(5)
+        if pages:
+            scroll_to_element(driver, pages[i+1])
+            time.sleep(2)
+            pages[i+1].click()
+            print("\nALERT: Continuing to next page of job results.")
+            time.sleep(5)
+        else:
+            print('You have submitted all available applications for your search filter! Closing program.')
     
 except Exception as e:
     message = 'An unexpected error occurred.\nPress continue to close the program. Restart the program to resume.'
