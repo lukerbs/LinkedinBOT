@@ -1,47 +1,60 @@
 # LinkedinBOT
 
 ## About 
-LinkedInBOT is a tool designed to automate your job search on LinkedIn. Utilize LinkedInBOT to automate job applications and connect with recruiters in your industry.
-
-Note: This has only been tested on Mac OS. I have not tested it on Windows.
+LinkedInBOT is a tool designed to automate your job search on LinkedIn. LinkedInBOT leverages the OpenAI chat completions API to automatically fill out custom responses to LinkedIn Easy Apply job applications based on information in your resume. 
 
 ## Features
-### connect.py
-1. Automated job search on LinkedIn 
-2. Target recruiters by industry and / or company
-3. Send custom messages to recruiters
-4. Automatically personalizes messages to recruiters with their first name
-### easy_apply.py
 1. Automate LinkedIn Easy Apply job applications
-2. Target jobs in your specific field of interest  
-3. Filter job search by location / remote-friendly
+2. Target jobs in your specific profession / industry / seniority level
+3. Filter job search by location radius, remote, hybrid, or in-person
+4. Automated and customized repsonses to job application questions with AI
 
-## Getting Started
-1. Install Google Chrome
-2. Clone LinkedinBOT to your computer 
-3. Create a Python virtual environment:
+## Getting Started | Installing Dependencies
+1. Install Google Chrome on your desktop
+2. Verify that Python is installed on your computer
+2. Clone LinkedinBOT to your computer from your command line:
+	- `git clone https://github.com/lukerbs/LinkedinBOT.git`
+3. Enter the project directory from your command line:
+	- `cd LinkedInBOT`
+4. Create and activate a new Python virtual environment:
 	- `python3 -m venv venv`
 	- `source venv/bin/activate`
-4. Install Dependencies:
+4. Install Python Dependencies:
 	- `pip3 install -r requirements.txt`
-
-## Usage: Recruiter Messaging Bot
-1. Customize your message for recruiters in `introduction.txt`
-	- NOTE: Be sure to leave the "FIRST_NAME" string in `introduction.txt` 
-		- ( this is so the bot can address recruiter by their first name)
-	- NOTE: Your introduction should not be longer than 280 characters
-2. Start the bot by running `python3 connect.py`
-3. Enter your LinkedIn username and password in the pop-up window if this is your first time using the bot.
-4. Enter your search query (e.g. 'data science recruiter', 'Amazon recruiter', etc.) in the pop-up
+5. Configure your OpenAI API Key & Environment Variable:
+	- Create your OpenAI API key here if you don't have one: [Create Your OpenAI API Key](https://platform.openai.com/docs/guides/production-best-practices/api-keys)
+	- Create an empty file named `.env` in the root project directory at `/LinkedinBOT/.env`
+	- Copy and paste the contents `/LinkedinBOT/.env-example` into `/LinkedinBOT/.env` with your text editor
+	- In the `.env` file, replace the `XXXXX` in `OPENAI_API_KEY=XXXXX` with your OpenAI API key. E.g.: `OPENAI_API_KEY=sk-hsf4ffs...`
+	- Optional Step: Set the `LINKEDIN_PREMIUM` variable to `LINKEDIN_PREMIUM=true` if you have an active LinkedIn Premium subscription. Otherwise, just continue to the next step. 
+	- Save the `.env` file to update your changes. 
+6. Add Your Resume Details to `/LinkedinBOT/resume.txt`:
+	- Open `/LinkedinBOT/resume.txt` with your text editor
+	- Replace the contents of `/LinkedinBOT/resume.txt` with your resume 
+	- In `/LinkedinBOT/resume.txt`, make sure to include details about your:
+		- Work history and years of employment
+		- Skill sets
+		- Desired salary
+		- Years of experience
+		- Name, Location, Email, and Phone Number
+		- Any other information that is likely to be asked in a job application
 
 ## Usage: Job Application Bot 
-1. Start the bot by running `python3 easy_apply.py`
+1. Start the bot by running: `python3 easy_apply.py`
 2. Enter your LinkedIn username and password in the pop-up window if this is your first time using the bot.
-3. Enter your desired job title in the pop-up window (e.g.: data scientist, sales executive, etc.)
+3. Enter your desired job title in the pop-up window (e.g.: data scientist, sales executive, etc.) and click 'Continue'.
+4. LinkedInBOT will log in to LinkedIn for you and search for your jobs. Wait for the next pop-up window. 
+5. Optional: The bot will pause, and pop-up will appear prompting you to manually apply any job search filters. Manually select the job search filters in the browser.
+	- Select your desired job filters, and make sure they are applied to the filter. 
+	- Once your search filters are manually selected and applied, press 'Continue'. 
+6. The bot will begin filling out custom job applications on your behalf. Now sit back and wait for the recruiters to call!
 
-## Tips
-1. Create a tiny URL that links to your public resume on Google Drive or Google Docs and include the url at the bottom of your custom introduction in `introduction.txt`
-2. If you accidentally entered the wrong username and password (or if you need to re-enter your username and password), simply delete the `config.json` file in the root of the project directory and re-run the bot
+## Additional Tips
+1. If you accidentally entered the wrong username and password (or if you need to re-enter your username and password), simply delete the `config.json` file in the root of the project directory and re-run the bot.
+2. While the LinkedIn bot is running in your browser, make sure to keep any DMs or chat windows closed. 
+3. In general, do not interfere or interact with the automated browser unless you are prompted to do so by the pop-up alert window (it may break the flow of the bot logic). However, the follow actions are usually okay to do:
+	- Expanding or shrinking the automated browser window
+	- Closing LinkedIn DMs that obstruct job application form fields
 
 ## Optional: Building the Standalone Desktop App (Mac OS Only)
 To turn the bot into a desktop application, run the following steps:
